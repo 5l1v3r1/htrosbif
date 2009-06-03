@@ -1,0 +1,272 @@
+#!/usr/bin/perl -w
+
+package htrosbif;
+
+use Getopt::Long;
+use Pod::Usage;
+use URI;
+use strict;
+
+=encoding utf8
+
+=head1 NAME
+
+htrosbif - Active HTTP fingerprinting and recon tool
+
+=head1 SYNOPSIS
+
+htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] url
+htrosbif [-?|-h|--help]
+
+=head1 DESCRIPTION
+
+Does a bit of Recon by Fire, if you will. Prods the web server in all sorts of old, new, basic, fancy, spec-compliant and spec-breaking ways. Tries to characterise both the well-spoken educated responses and the seriously deviant babble it receives in return.
+
+Fingerprint-matching still to be implemented. But fingerprinting is.
+
+=head1 AUTHOR
+
+Erik Inge Bolsø <knan-rosbif@anduin.net> originally wrote this tool.
+
+=cut
+
+my $verbose;
+my $debug;
+my $resptimeout = 2;
+my $timeout2 = 15;
+my $help = 0;
+my $result;
+
+# blandest possible but still plausible useragent
+my $bland_useragent = 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)' ;
+
+$result = GetOptions (	'verbose|v' => \$verbose,
+			'timeout=i' => \$resptimeout,
+			'debug|d=i' => \$debug,
+                      	'help|h|?'  => \$help);
+
+pod2usage(-exitstatus=>0, -verbose=>2) if $help;
+
+my $url = $ARGV[0] || "http://127.0.0.1:8080/";
+my $uri = URI->new($url);
+my $host = $uri->host;
+my $port = $uri->port;
+my $path = $uri->path;
+my $scheme = $uri->scheme;
+
+my %testresults;
+
+# XXX: actually, no https yet.
+unless ($scheme eq "http" or $scheme eq "https") { die "only supports http and https URI schemes, for now.\n" ; }
+
+# is_namevhost();
+$testresults{'http09'} = &test_http09();
+$testresults{'get_10_knowngood'} = &test_get_10_knowngood();
+
+if ($verbose and %testresults) {
+  print "\n";
+  print "test results:\n" ;
+  foreach (keys %testresults) {
+    print "$_:\n\n";
+    my $tmphashref = $testresults{$_} ;
+    foreach my $sigkey (sort keys %$tmphashref) {
+       print " $sigkey: $tmphashref->{ $sigkey }\n";
+    }
+  print "\n";
+  }
+}
+
+sub test_http09()
+{
+  # tests a 1991-style "GET /" request
+  # we get lots of fun, illuminating responses to this one these days...
+  # my favourite so far is the wonderful oxymoron "HTTP/0.9 200 OK"
+
+  my %signature ;
+  my $sigref = \%signature ;
+  my @data   = ( );
+  my $blarg;
+
+  use IO::Socket;
+  my $sock = new IO::Socket::INET ( PeerAddr => $host, PeerPort => $port, Proto => 'tcp' );
+
+  die "Could not create socket: $!\n" unless $sock;
+  print $sock "GET $path\r\n";
+  eval {
+    local $SIG{ALRM} = sub {
+      my $blarg;
+      print $sock "\r\n";
+      while (read $sock, $blarg, 1000000)
+      {
+        $signature{'http09_needcrlfcrlf'} = 1;
+        push @data, $blarg;
+      }
+      $signature{'http09_nodata'} = 1 unless @data;
+      die "ow\n";
+    };
+
+    alarm($resptimeout);
+    while (read $sock, $blarg, 1000000)
+    {
+      alarm(0);
+      push @data, $blarg;
+    }
+  };
+  close($sock);
+
+  if ($debug and @data) {
+    print "test_http09 returned data (if any):\n" ;
+    foreach (@data) {
+      print "$_\n";
+    }
+  }
+
+  my $sigref2 = classify_signature(@data);
+  my @sig2keys = keys %$sigref2;
+  if ($#sig2keys > -1)
+  {
+    $signature{'http09_returnsheaders'} = 1;
+    %signature = ( %signature, %$sigref2 );
+  }
+  else { $signature{'http09_valid'} = 1; }
+
+  return $sigref;
+}
+
+sub is_namevhost()
+{
+  # XXX: implement me
+  # tests HTTP/1.0 request with and without host header in parallel, compares returned data
+}
+
+sub test_get_10_knowngood()
+{
+  # tests a plain HTTP/1.0 request with Host header and a bland User-Agent.
+  # no Accept: headers, in order to see default values.
+  my $request  = "GET $path HTTP/1.0\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "\r\n";
+
+  my @data = helper_talk($request);
+
+  if ($debug and @data) {
+    print "test_get_10_knowngood() returned data (if any):\n" ;
+    foreach (@data) {
+      print "$_\n";
+    }
+  }
+  return classify_signature(@data);
+}
+
+sub helper_talk
+{
+  my @data;
+  my $blarg;
+
+  use IO::Socket;
+  my $sock = new IO::Socket::INET ( PeerAddr => $host, PeerPort => $port, Proto => 'tcp' );
+
+  die "Could not create socket: $!\n" unless $sock;
+  
+  print $sock $_[0];
+
+  while (read $sock, $blarg, 1000000)
+  {
+    push @data, $blarg;
+  }
+  close($sock);
+
+  return @data;
+}
+
+# the meaty big analysis routine
+sub classify_signature()
+{
+  my @data = (@_) ;
+  my @lines;
+  my %signature ;
+  my $sigref = \%signature ;
+  my $linenum = 0 ;
+  my @headers;
+
+  while (@data)
+  {
+    my @tmp = split /\n/, pop @data ;
+    @lines = (@lines, @tmp) ;
+  }
+
+  # preprocessing: do header line folding, cut everything after the header
+  my @linestmp;
+  LINEPRE: foreach my $line (@lines)
+  {
+    my $tmp = $/ ;
+    $/ = "\r" ;
+    chomp $line ;
+    $/ = $tmp ;
+
+    if ($#linestmp == -1 and ( not ($line =~ m|^[Hh][Tt][Tt][Pp]/\d\.\d|)) and ($line =~ /\S+/))
+    {
+      last LINEPRE; # content before HTTP response - no headers - HTTP/0.9 GET?
+    }
+
+    if ($line =~ /^\s+(\S+)/)
+    {
+      print "classify preprocessing: folding line '$line' into previous\n" if $debug;
+      $linestmp[$#linestmp] = $linestmp[$#linestmp] . $1 ;
+    }
+
+    if ($#linestmp > 1 and $line =~ /^$/)
+    {
+      last LINEPRE; # crlfcrlf - end of headers
+    }
+    push @linestmp, $line;
+  }
+  @lines = @linestmp ;
+
+  # analysis
+  LINE: foreach my $line (@lines)
+  {
+    $linenum++;
+
+    if ($line =~ m|^([Hh][Tt][Tt][Pp])/(\d\.\d)| and not exists $signature{'http'})
+    {
+      $signature{'http'} = $1;
+      $signature{'http_version'} = $2;
+
+      if ($line =~ m|^[Hh][Tt][Tt][Pp]/\d\.\d(\s+)(\d{3})(\s+)(.+)| )
+      {
+        $signature{'response_code'} = $2;
+        $signature{'response_text'} = $4;
+        unless ($1 eq " ") { $signature{'quirk_http_to_responsecode_whitespace'} = $1; }
+        unless ($3 eq " ") { $signature{'quirk_responsecode_to_responsetext_whitespace'} = $3; }
+      }
+    }
+
+    if ($linenum == 1 and not exists $signature{'http'})
+    {
+      $signature{'quirk_whitespace_before_http_response'} = 1;
+      next LINE;
+    }
+
+    if ($line =~ /^(\S+)( ?):( ?)(.*)/)
+    {
+      push @headers, $1 ;
+      unless ($2 eq "") {
+        my $quirkname = 'quirk_whitespace_pre_' . lc ($1);
+        $signature{$quirkname} = hex $2 ;
+      }
+      unless ($3 eq " ") {
+        my $quirkname = 'quirk_whitespace_post_' . lc ($1);
+        $signature{$quirkname} = hex $3 ;
+      }
+    }
+  }
+
+  if (@headers) {
+    $signature{'header_order'} = join(',', @headers) ;
+  }
+
+  return $sigref;
+}
+
