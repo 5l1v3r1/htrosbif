@@ -4,6 +4,7 @@ package htrosbif;
 
 use Getopt::Long;
 use Pod::Usage;
+use Test::Deep;
 use URI;
 use strict;
 
@@ -16,6 +17,7 @@ htrosbif - Active HTTP fingerprinting and recon tool
 =head1 SYNOPSIS
 
 htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] url
+
 htrosbif [-?|-h|--help]
 
 =head1 DESCRIPTION
@@ -33,7 +35,7 @@ Erik Inge Bolsø <knan-rosbif@anduin.net> originally wrote this tool.
 my $verbose;
 my $debug;
 my $resptimeout = 2;
-my $timeout2 = 15;
+my $mediumtimeout = 7;
 my $help = 0;
 my $result;
 
@@ -55,18 +57,32 @@ my $path = $uri->path;
 my $scheme = $uri->scheme;
 
 my %testresults;
+my $tmpresult;
 
 # XXX: actually, no https yet.
 unless ($scheme eq "http" or $scheme eq "https") { die "only supports http and https URI schemes, for now.\n" ; }
 
 # is_namevhost();
-$testresults{'http09'} = &test_http09();
-$testresults{'get_10_knowngood'} = &test_get_10_knowngood();
 
+# friendly requests, should mostly work
+#$tmpresult = &test_get_09_knowngood(); add_testresult('get_09_knowngood', $tmpresult );
+$tmpresult = &test_get_10_knowngood(); add_testresult('get_10_knowngood', $tmpresult );
+$tmpresult = &test_get_11_knowngood(); add_testresult('get_11_knowngood', $tmpresult );
+
+# borderline requests
+$tmpresult = &test_get_12_knowngood(); add_testresult('get_12_knowngood', $tmpresult );
+
+# error-provoking requests
+$tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult );
+
+# evil requests
+# (none yet)
+
+# dump results
 if ($verbose and %testresults) {
   print "\n";
   print "test results:\n" ;
-  foreach (keys %testresults) {
+  foreach (sort keys %testresults) {
     print "$_:\n\n";
     my $tmphashref = $testresults{$_} ;
     foreach my $sigkey (sort keys %$tmphashref) {
@@ -76,7 +92,30 @@ if ($verbose and %testresults) {
   }
 }
 
-sub test_http09()
+sub add_testresult
+{
+  my $sigkeyname = $_[0];
+  my $signature  = $_[1];
+
+  # compress identical results into one result + references
+  # max one extra level of indirection, shouldn't slow anything down
+
+  TESTRES: foreach (sort keys %testresults) {
+    my $tmphashref = $testresults{$_} ;
+    unless ( $tmphashref->{ 'identical_to' } )
+    {
+       my $equal = eq_deeply ( $tmphashref, $signature );
+       if ($equal)
+       {
+         $signature = { 'identical_to' => $_ } ;
+         last TESTRES;
+       }
+    }
+  }
+  $testresults{$sigkeyname} = $signature ;
+}
+
+sub test_get_09_knowngood()
 {
   # tests a 1991-style "GET /" request
   # we get lots of fun, illuminating responses to this one these days...
@@ -86,6 +125,8 @@ sub test_http09()
   my $sigref = \%signature ;
   my @data   = ( );
   my $blarg;
+
+  if ($debug) { print "test_http09() starting\n"; }
 
   use IO::Socket;
   my $sock = new IO::Socket::INET ( PeerAddr => $host, PeerPort => $port, Proto => 'tcp' );
@@ -115,7 +156,7 @@ sub test_http09()
   close($sock);
 
   if ($debug and @data) {
-    print "test_http09 returned data (if any):\n" ;
+    print "test_get_09_knowngood returned data (if any):\n" ;
     foreach (@data) {
       print "$_\n";
     }
@@ -136,7 +177,7 @@ sub test_http09()
 sub is_namevhost()
 {
   # XXX: implement me
-  # tests HTTP/1.0 request with and without host header in parallel, compares returned data
+  # tests HTTP/1.0 request with and without host header, compares returned data
 }
 
 sub test_get_10_knowngood()
@@ -148,7 +189,12 @@ sub test_get_10_knowngood()
      $request .= "User-Agent: $bland_useragent\r\n";
      $request .= "\r\n";
 
-  my @data = helper_talk($request);
+  if ($debug) { print "test_get_10_knowngood() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
     print "test_get_10_knowngood() returned data (if any):\n" ;
@@ -156,25 +202,140 @@ sub test_get_10_knowngood()
       print "$_\n";
     }
   }
-  return classify_signature(@data);
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http10_unexpected_keepalive'} = 1;
+  }
+  return $sigref;
 }
 
+sub test_get_11_knowngood()
+{
+  # tests a plain HTTP/1.1 request with Host header and a bland User-Agent.
+  # no Accept: headers, in order to see default values.
+  # Connection: close, for convenience.
+  my $request  = "GET $path HTTP/1.1\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print "test_get_11_knowngood() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print "test_get_11_knowngood() returned data (if any):\n" ;
+    foreach (@data) {
+      print "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1;
+  }
+  return $sigref;
+}
+
+sub test_get_12_knowngood()
+{
+  # test_get_11_knowngood() with http version changed to 1.2, to test handling of unknown minor http versions
+  #  some servers fall back to talking 1.1, some to 1.0
+  my $request  = "GET $path HTTP/1.2\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print "test_get_12_knowngood() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print "test_get_12_knowngood() returned data (if any):\n" ;
+    foreach (@data) {
+      print "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  return $sigref;
+}
+
+sub test_get_20_knowngood()
+{
+  # test_get_11_knowngood() with http version changed to 2.0, to test handling of unknown major http versions
+  my $request  = "GET $path HTTP/2.0\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print "test_get_20_knowngood() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print "test_get_20_knowngood() returned data (if any):\n" ;
+    foreach (@data) {
+      print "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  return $sigref;
+}
+
+# helper, opening/closing connection and doing non-blocking i/o
 sub helper_talk
 {
   my @data;
   my $blarg;
-
+  my $sigref = $_[1] ;
+ 
   use IO::Socket;
   my $sock = new IO::Socket::INET ( PeerAddr => $host, PeerPort => $port, Proto => 'tcp' );
+  $sock->blocking(0);
 
   die "Could not create socket: $!\n" unless $sock;
   
   print $sock $_[0];
 
-  while (read $sock, $blarg, 1000000)
+  my $rin = '';
+  vec($rin,fileno($sock),1) = 1;
+
+  my ($nfound,$timeleft) = select(my $rout=$rin, undef, undef, $mediumtimeout);
+
+  if ($nfound)
   {
-    push @data, $blarg;
+    while ($nfound and read $sock, $blarg, 5000000)
+    {
+      push @data, $blarg;
+      vec($rin,fileno($sock),1) = 1;
+      ($nfound,$timeleft) = select(my $rout=$rin, undef, undef, $mediumtimeout);
+    }
+  };
+
+  unless ($nfound)
+  {
+    $sigref->{'does_keepalive'} = 1; # which is mostly unexpected for our tests.
   }
+
   close($sock);
 
   return @data;
@@ -189,6 +350,8 @@ sub classify_signature()
   my $sigref = \%signature ;
   my $linenum = 0 ;
   my @headers;
+
+  @data = ( join '', @data ) ;
 
   while (@data)
   {
