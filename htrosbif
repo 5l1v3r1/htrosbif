@@ -4,7 +4,7 @@ package htrosbif;
 
 use Getopt::Long;
 use Pod::Usage;
-use Test::Deep;
+use Test::Deep::NoTest;
 use URI;
 use strict;
 
@@ -157,7 +157,7 @@ sub test_get_09_knowngood()
 
   if ($debug and @data) {
     print "test_get_09_knowngood returned data (if any):\n" ;
-    foreach (@data) {
+    foreach (join '',@data) {
       print "$_\n";
     }
   }
@@ -198,7 +198,7 @@ sub test_get_10_knowngood()
 
   if ($debug and @data) {
     print "test_get_10_knowngood() returned data (if any):\n" ;
-    foreach (@data) {
+    foreach (join '',@data) {
       print "$_\n";
     }
   }
@@ -232,7 +232,7 @@ sub test_get_11_knowngood()
 
   if ($debug and @data) {
     print "test_get_11_knowngood() returned data (if any):\n" ;
-    foreach (@data) {
+    foreach (join '',@data) {
       print "$_\n";
     }
   }
@@ -265,7 +265,7 @@ sub test_get_12_knowngood()
 
   if ($debug and @data) {
     print "test_get_12_knowngood() returned data (if any):\n" ;
-    foreach (@data) {
+    foreach (join '',@data) {
       print "$_\n";
     }
   }
@@ -292,7 +292,7 @@ sub test_get_20_knowngood()
 
   if ($debug and @data) {
     print "test_get_20_knowngood() returned data (if any):\n" ;
-    foreach (@data) {
+    foreach (join '',@data) {
       print "$_\n";
     }
   }
@@ -392,6 +392,26 @@ sub classify_signature()
   {
     $linenum++;
 
+    # check for overeager 100 Continue ... sent after seeing the request line and before seeing the headers.
+    # Jetty 2.4 does this. It then reads the headers, and follows up sending a full response.
+    # A mildly strange interpretation of RFC2068. Probably led to the multiple paragraphs of clarifications
+    # in RFC2616.
+    if ($line =~ m|^([Hh][Tt][Tt][Pp])/(1\.1) 100| and not exists $signature{'http'} and not exists $signature{'temp_http'})
+    {
+      $signature{'temp_http'} = $1;
+      $signature{'temp_http_version'} = $2;
+
+      if ($line =~ m|^[Hh][Tt][Tt][Pp]/\d\.\d(\s+)(\d{3})(\s+)(.+)| )
+      {
+        $signature{'temp_response_code'} = $2;
+        $signature{'temp_response_text'} = $4;
+        unless ($1 eq " ") { $signature{'temp_quirk_http_to_responsecode_whitespace'} = $1; }
+        unless ($3 eq " ") { $signature{'temp_quirk_responsecode_to_responsetext_whitespace'} = $3; }
+      }
+      next LINE;
+    }
+
+    # look for the http response
     if ($line =~ m|^([Hh][Tt][Tt][Pp])/(\d\.\d)| and not exists $signature{'http'})
     {
       $signature{'http'} = $1;
@@ -406,12 +426,13 @@ sub classify_signature()
       }
     }
 
-    if ($linenum == 1 and not exists $signature{'http'})
+    if ($linenum == 1 and not exists $signature{'http'} and not exists $signature{'temp_http'})
     {
       $signature{'quirk_whitespace_before_http_response'} = 1;
       next LINE;
     }
 
+    # read headers
     if ($line =~ /^(\S+)( ?):( ?)(.*)/)
     {
       push @headers, $1 ;
@@ -426,8 +447,38 @@ sub classify_signature()
     }
   }
 
+  # list header order - may do some filtering here at some point
   if (@headers) {
     $signature{'header_order'} = join(',', @headers) ;
+  }
+
+  # overeager 100 Continue quirk
+  if (exists $signature{'temp_http'} and exists $signature{'http'})
+  {
+    $signature{'overeager_100_continue'} = 1;
+    delete $signature{'temp_http'};
+    delete $signature{'temp_http_version'};
+    delete $signature{'temp_response_code'};
+    delete $signature{'temp_response_text'};
+    delete $signature{'temp_quirk_http_to_responsecode_whitespace'};
+    delete $signature{'temp_quirk_responsecode_to_responsetext_whitespace'};
+  }
+
+  # did we really get just a 100 Continue? All right.
+  if (exists $signature{'temp_http'} and not exists $signature{'http'})
+  {
+    $signature{'http'}             = $signature{'temp_http'};          delete $signature{'temp_http'};
+    $signature{'http_version'}     = $signature{'temp_http_version'};  delete $signature{'temp_http_version'};
+    $signature{'response_code'}    = $signature{'temp_response_code'}; delete $signature{'temp_response_code'};
+    $signature{'response_text'}    = $signature{'temp_response_text'}; delete $signature{'temp_response_text'};
+    if ( exists $signature{'temp_quirk_http_to_responsecode_whitespace'} )
+    {
+      $signature{'quirk_http_to_responsecode_whitespace'} = $signature{'temp_quirk_http_to_responsecode_whitespace'}; delete $signature{'temp_quirk_http_to_responsecode_whitespace'};
+    }
+    if ( exists $signature{'temp_quirk_responsecode_to_responsetext_whitespace'} )
+    {
+      $signature{'quirk_responsecode_to_responsetext_whitespace'} = $signature{'temp_quirk_responsecode_to_responsetext_whitespace'}; delete $signature{'temp_quirk_responsecode_to_responsetext_whitespace'};
+    }
   }
 
   return $sigref;
