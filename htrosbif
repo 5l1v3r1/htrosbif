@@ -68,6 +68,8 @@ unless ($scheme eq "http" or $scheme eq "https") { die "only supports http and h
 $tmpresult = &test_get_09_knowngood(); add_testresult('get_09_knowngood', $tmpresult );
 $tmpresult = &test_get_10_knowngood(); add_testresult('get_10_knowngood', $tmpresult );
 $tmpresult = &test_get_11_knowngood(); add_testresult('get_11_knowngood', $tmpresult );
+$tmpresult = &test_options_11_star(); add_testresult('options_11_star', $tmpresult );
+$tmpresult = &test_options_11_knowngood(); add_testresult('options_11_knowngood', $tmpresult );
 
 # borderline requests
 $tmpresult = &test_get_12_knowngood(); add_testresult('get_12_knowngood', $tmpresult );
@@ -229,6 +231,70 @@ sub test_get_11_knowngood()
 
   if ($debug and @data) {
     print "test_get_11_knowngood() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1;
+  }
+  return $sigref;
+}
+
+sub test_options_11_star()
+{
+  # HTTP/1.1 OPTIONS request applicable for whole server
+  my $request  = "OPTIONS * HTTP/1.1\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print "test_options_11_star() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print "test_options_11_star() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1;
+  }
+  return $sigref;
+}
+
+sub test_options_11_knowngood()
+{
+  # HTTP/1.1 OPTIONS request applicable for the known good url
+  my $request  = "OPTIONS $path HTTP/1.1\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print "test_options_11_knowngood() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print "test_options_11_knowngood() returned data (if any):\n" ;
     foreach (join '',@data) {
       print "$_\n";
     }
@@ -442,7 +508,9 @@ sub classify_signature()
     # read headers
     if ($line =~ /^(\S+)( ?):( ?)(.*)/)
     {
-      push @headers, $1 ;
+      my $hname = $1 ;
+      my $hcontent = $4 ;
+      push @headers, $hname ;
       unless ($2 eq "") {
         my $quirkname = 'quirk_whitespace_pre_' . lc ($1);
         $signature{$quirkname} = hex $2 ;
@@ -450,6 +518,16 @@ sub classify_signature()
       unless ($3 eq " ") {
         my $quirkname = 'quirk_whitespace_post_' . lc ($1);
         $signature{$quirkname} = hex $3 ;
+      }
+      if ($hname =~ m|^Allow$|i)
+      {
+        my @tmp = split ( / |,/, $hcontent ) ;
+        $signature{'allow_order'} = uc join ",", grep { ! m|^$| } @tmp ;
+      }
+      if ($hname =~ m|^Public$|i)
+      {
+        my @tmp = split ( / |,/, $hcontent ) ;
+        $signature{'public_order'} = uc join ",", grep { ! m|^$| } @tmp ;
       }
     }
   }
