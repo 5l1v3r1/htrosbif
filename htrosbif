@@ -368,10 +368,10 @@ sub classify_signature()
     chomp $line ;
     $/ = $tmp ;
 
-    if ($#linestmp == -1 and ( not ($line =~ m|^[Hh][Tt][Tt][Pp]/\d\.\d|)) and ($line =~ /\S+/))
-    {
-      last LINEPRE; # content before HTTP response - no headers - HTTP/0.9 GET?
-    }
+#    if ($#linestmp == -1 and ( not ($line =~ m|^[Hh][Tt][Tt][Pp]/\d\.\d|)) and ($line =~ /\S+/))
+#    {
+#      last LINEPRE; # content before HTTP response - no headers - HTTP/0.9 GET?
+#    }
 
     if ($line =~ /^\s+(\S+)/)
     {
@@ -426,7 +426,7 @@ sub classify_signature()
       }
     }
 
-    if ($linenum == 1 and not exists $signature{'http'} and not exists $signature{'temp_http'})
+    if ($linenum == 1 and not exists $signature{'http'} and not exists $signature{'temp_http'} and $line =~ m|^\s*$|)
     {
       $signature{'quirk_whitespace_before_http_response'} = 1;
       next LINE;
@@ -478,6 +478,25 @@ sub classify_signature()
     if ( exists $signature{'temp_quirk_responsecode_to_responsetext_whitespace'} )
     {
       $signature{'quirk_responsecode_to_responsetext_whitespace'} = $signature{'temp_quirk_responsecode_to_responsetext_whitespace'}; delete $signature{'temp_quirk_responsecode_to_responsetext_whitespace'};
+    }
+  }
+
+  # no http response found at all?
+  # expected, for HTTP/0.9
+  # mildly unexpected otherwise
+  unless (exists $signature{'http'})
+  {
+    # grope through the data looking for error codes.
+    # the server may have sent a html error page with the http response embedded. (Boa, for example.)
+    FALLBACKLINE: foreach my $line (grep { m|<.+?>\d{3}.*</.+?>| } @lines)
+    {
+      if ($line =~ m|<.+?>(\d{3})\s*(.+?)</.+?>|)
+      {
+         $signature{'response_code'} = $1;
+         $signature{'response_text'} = $2;
+         $signature{'http_response_as_html'} = 1;
+         last FALLBACKLINE;
+      }
     }
   }
 
