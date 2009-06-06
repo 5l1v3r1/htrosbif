@@ -17,15 +17,17 @@ htrosbif - Active HTTP fingerprinting and recon tool
 
 =head1 SYNOPSIS
 
-htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-w|--writesig <signature file>] url
+htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-w|--writesig <signature file>] <url>
 
 htrosbif [-?|-h|--help]
+
+<url> should be a valid url returning a 200 series status code - no redirect or authentication. This restriction may be lifted in the future.
 
 =head1 DESCRIPTION
 
 Does a bit of Recon by Fire, if you will. Prods the web server in all sorts of old, new, basic, fancy, spec-compliant and spec-breaking ways. Tries to characterise both the well-spoken educated responses and the seriously deviant babble it receives in return.
 
-Fingerprint-matching still to be implemented. But fingerprinting is.
+Fingerprint-matching still to be implemented.
 
 =head1 AUTHOR
 
@@ -96,6 +98,7 @@ $tmpresult = &test_options_11_knowngood(); add_testresult('options_11_knowngood'
 $tmpresult = &test_get_12_knowngood(); add_testresult('get_12_knowngood', $tmpresult );
 
 # error-provoking requests
+$tmpresult = &test_doesnotexist_11_knowngood(); add_testresult('doesnotexist_11_knowngood', $tmpresult );
 $tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult );
 
 # evil requests
@@ -371,6 +374,39 @@ sub test_get_12_knowngood()
   {
     delete $signature{'does_keepalive'};
     $signature{'http_unexpected_keepalive'} = 1;
+  }
+  return $sigref;
+}
+
+sub test_doesnotexist_11_knowngood()
+{
+  # HTTP/1.1 guaranteed non-existent method request for the known good url.
+  # some simple implementations treats it as a GET and doesn't worry further about it.
+  my $request  = "DOESNOTEXIST $path HTTP/1.1\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print "test_doesnotexist_11_knowngood() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print "test_doesnotexist_11_knowngood() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1;
   }
   return $sigref;
 }
