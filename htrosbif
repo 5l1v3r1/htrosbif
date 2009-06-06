@@ -65,7 +65,7 @@ unless ($scheme eq "http" or $scheme eq "https") { die "only supports http and h
 # is_namevhost();
 
 # friendly requests, should mostly work
-#$tmpresult = &test_get_09_knowngood(); add_testresult('get_09_knowngood', $tmpresult );
+$tmpresult = &test_get_09_knowngood(); add_testresult('get_09_knowngood', $tmpresult );
 $tmpresult = &test_get_10_knowngood(); add_testresult('get_10_knowngood', $tmpresult );
 $tmpresult = &test_get_11_knowngood(); add_testresult('get_11_knowngood', $tmpresult );
 
@@ -121,56 +121,48 @@ sub test_get_09_knowngood()
   # we get lots of fun, illuminating responses to this one these days...
   # my favourite so far is the wonderful oxymoron "HTTP/0.9 200 OK"
 
+  my $request   = "GET $path\r\n";
+  my $request2  = "GET $path\r\n\r\n";
+
+  if ($debug) { print "test_get_09_knowngood() starting\n"; }
+
   my %signature ;
   my $sigref = \%signature ;
-  my @data   = ( );
-  my $blarg;
 
-  if ($debug) { print "test_http09() starting\n"; }
+  my @data = helper_talk($request, $sigref);
 
-  use IO::Socket;
-  my $sock = new IO::Socket::INET ( PeerAddr => $host, PeerPort => $port, Proto => 'tcp' );
-
-  die "Could not create socket: $!\n" unless $sock;
-  print $sock "GET $path\r\n";
-  eval {
-    local $SIG{ALRM} = sub {
-      my $blarg;
-      print $sock "\r\n";
-      while (read $sock, $blarg, 1000000)
-      {
-        $signature{'http09_needcrlfcrlf'} = 1;
-        push @data, $blarg;
-      }
-      $signature{'http09_nodata'} = 1 unless @data;
-      die "ow\n";
-    };
-
-    alarm($resptimeout);
-    while (read $sock, $blarg, 1000000)
-    {
-      alarm(0);
-      push @data, $blarg;
-    }
-  };
-  close($sock);
-
-  if ($debug and @data) {
-    print "test_get_09_knowngood returned data (if any):\n" ;
-    foreach (join '',@data) {
-      print "$_\n";
-    }
-  }
-
-  my $sigref2 = classify_signature(@data);
-  my @sig2keys = keys %$sigref2;
-  if ($#sig2keys > -1)
+  if ($#data == -1)
   {
-    $signature{'http09_returnsheaders'} = 1;
-    %signature = ( %signature, %$sigref2 );
+    delete $signature{'does_keepalive'} if exists $signature{'does_keepalive'};
+    @data = helper_talk($request2, $sigref);
+    unless ($#data == -1)
+    {
+      $signature{'http09_needcrlfcrlf'} = 1;
+    }
   }
-  else { $signature{'http09_valid'} = 1; }
 
+  unless ($#data == -1)
+  {
+    if ($debug) {
+      print "test_get_09_knowngood returned data (if any):\n" ;
+      foreach (join '',@data) {
+        print "$_\n";
+      }
+    }
+
+    my $sigref2 = classify_signature(@data);
+    my @sig2keys = keys %$sigref2;
+    if ($#sig2keys > -1)
+    {
+      $signature{'http09_returnsheaders'} = 1;
+      %signature = ( %signature, %$sigref2 );
+    }
+    else { $signature{'http09_valid'} = 1; }
+  }
+  else
+  {
+    $signature{'http09_nodata'} = 1;
+  }
   return $sigref;
 }
 
