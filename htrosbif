@@ -31,6 +31,11 @@ Fingerprint-matching still to be implemented. But fingerprinting is.
 
 Erik Inge Bolsø <knan-rosbif@anduin.net> originally wrote this tool.
 
+=head1 SEE ALSO
+
+ httprecon	<http://www.computec.ch/projekte/httprecon/>
+ hmap		<http://ujeni.murkyroc.com/hmap/>
+
 =cut
 
 my $verbose;
