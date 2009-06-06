@@ -163,6 +163,11 @@ sub test_get_09_knowngood()
   {
     $signature{'http09_nodata'} = 1;
   }
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http_unexpected_keepalive'} = 1;
+  }
   return $sigref;
 }
 
@@ -199,7 +204,7 @@ sub test_get_10_knowngood()
   if (exists $signature{'does_keepalive'})
   {
     delete $signature{'does_keepalive'};
-    $signature{'http10_unexpected_keepalive'} = 1;
+    $signature{'http_unexpected_keepalive'} = 1;
   }
   return $sigref;
 }
@@ -263,6 +268,11 @@ sub test_get_12_knowngood()
   }
   my $sigref2 = classify_signature(@data);
   %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http_unexpected_keepalive'} = 1;
+  }
   return $sigref;
 }
 
@@ -290,6 +300,11 @@ sub test_get_20_knowngood()
   }
   my $sigref2 = classify_signature(@data);
   %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http_unexpected_keepalive'} = 1;
+  }
   return $sigref;
 }
 
