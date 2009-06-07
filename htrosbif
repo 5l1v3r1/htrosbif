@@ -452,10 +452,11 @@ sub helper_talk
  
   use IO::Socket;
   my $sock = new IO::Socket::INET ( PeerAddr => $host, PeerPort => $port, Proto => 'tcp' );
-  $sock->blocking(0);
 
   die "Could not create socket: $!\n" unless $sock;
   
+  $sock->blocking(0);
+
   print $sock $_[0];
 
   my $rin = '';
