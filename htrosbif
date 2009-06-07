@@ -601,9 +601,10 @@ sub classify_signature()
     }
   }
 
-  # list header order - may do some filtering here at some point
+  # list header order
+  #  ignore X-* headers, Set-Cookie, SLASH-LOG-DATA, Content-Disposition, Content-Language
   if (@headers) {
-    $signature{'header_order'} = join(',', @headers) ;
+    $signature{'header_order'} = join(',', grep { (!/^X-.*/i and !/^Set-Cookie/i and !/^SLASH-LOG-DATA/i and !/^Content-Disposition/i and !/^Content-Language/i) } @headers) ;
   }
 
   # overeager 100 Continue quirk
