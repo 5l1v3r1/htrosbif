@@ -518,11 +518,6 @@ sub classify_signature()
     chomp $line ;
     $/ = $tmp ;
 
-#    if ($#linestmp == -1 and ( not ($line =~ m|^[Hh][Tt][Tt][Pp]/\d\.\d|)) and ($line =~ /\S+/))
-#    {
-#      last LINEPRE; # content before HTTP response - no headers - HTTP/0.9 GET?
-#    }
-
     if ($line =~ /^\s+(\S+)/)
     {
       print "classify preprocessing: folding line '$line' into previous\n" if $debug;
