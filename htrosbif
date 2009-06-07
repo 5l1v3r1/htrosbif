@@ -539,7 +539,7 @@ sub classify_signature()
 
     # check for overeager 100 Continue ... sent after seeing the request line and before seeing the headers.
     # Jetty 2.4 does this. It then reads the headers, and follows up sending a full response.
-    # A mildly strange interpretation of RFC2068. Probably led to the multiple paragraphs of clarifications
+    # A quite strange interpretation of RFC2068. Probably led to the multiple paragraphs of clarifications
     # in RFC2616.
     if ($line =~ m|^([Hh][Tt][Tt][Pp])/(1\.1) 100| and not exists $signature{'http'} and not exists $signature{'temp_http'})
     {
@@ -645,7 +645,8 @@ sub classify_signature()
   unless (exists $signature{'http'})
   {
     # grope through the data looking for error codes.
-    # the server may have sent a html error page with the http response embedded. (Boa, for example.)
+    # the server may have sent a html error page with the http response embedded.
+    # some boa releases do this
     FALLBACKLINE: foreach my $line (grep { m|<.+?>\d{3}.*</.+?>| } @lines)
     {
       if ($line =~ m|<.+?>(\d{3})\s*(.+?)</.+?>|)
