@@ -3,6 +3,7 @@
 package htrosbif;
 
 use Data::Dumper;
+use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 use Test::Deep::NoTest;
@@ -17,7 +18,7 @@ htrosbif - Active HTTP fingerprinting and recon tool
 
 =head1 SYNOPSIS
 
-htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-w|--writesig <signature file>] <url>
+htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-m|--matchsigs <signature dir>] [-w|--writesig <signature file>] <url>
 
 htrosbif [-?|-h|--help]
 
@@ -27,7 +28,7 @@ htrosbif [-?|-h|--help]
 
 Does a bit of Recon by Fire, if you will. Prods the web server in all sorts of old, new, basic, fancy, spec-compliant and spec-breaking ways. Tries to characterise both the well-spoken educated responses and the seriously deviant babble it receives in return.
 
-Fingerprint-matching still to be implemented.
+Fuzzy fingerprint matching still to be implemented.
 
 =head1 AUTHOR
 
@@ -47,11 +48,13 @@ my $mediumtimeout = 7;
 my $help = 0;
 my $result;
 my $writesig;
+my $matchsigs;
 
 # blandest possible but still plausible useragent
 my $bland_useragent = 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)' ;
 
 $result = GetOptions (	'writesig|w=s' => \$writesig,
+			'matchsigs|m=s'=> \$matchsigs,
 			'verbose|v'    => \$verbose,
 			'timeout=i'    => \$resptimeout,
 			'debug|d=i'    => \$debug,
@@ -69,6 +72,8 @@ my $scheme = $uri->scheme;
 my %testresults;
 my $tmpresult;
 
+my %matchresults;
+
 my $OK_CHARS='-a-zA-Z0-9_./';
 if ($writesig)
 {
@@ -82,8 +87,43 @@ if ($writesig)
   }
 }
 
+if ($matchsigs)
+{
+  if ($matchsigs =~ m|[^$OK_CHARS]|)
+  {
+    warn ("Unacceptable characters in -m dirname, ignoring option\n");
+    undef $matchsigs;
+  } else {
+    $matchsigs =~ /(.*)/;
+    $matchsigs = $1;
+  }
+  if (! (-e $matchsigs and -d $matchsigs and -r $matchsigs) )
+  {
+    warn ("Signature directory '$matchsigs' not readable, ignoring -m option\n");
+    undef $matchsigs;
+  }
+}
+
 # XXX: actually, no https yet.
 unless ($scheme eq "http" or $scheme eq "https") { die "only supports http and https URI schemes, for now.\n" ; }
+
+# load signatures for matching
+if ($matchsigs)
+{
+  my @sigs = <$matchsigs/*.sig> ;
+  SIG: foreach my $signame (@sigs)
+  {
+    open SIGNAME, "<" . $signame or next SIG;
+    my $sig = join '', <SIGNAME> ;
+    close SIGNAME ;
+    my $VAR1;
+    eval $sig ;
+    $matchresults{ basename $signame } = $VAR1 ;
+  }
+  if ($verbose) { print keys (%matchresults) . " signatures loaded.\n" ; }
+}
+
+print "actively fingerprinting...\n" if ($verbose) ;
 
 # is_namevhost();
 
@@ -118,12 +158,33 @@ if ($verbose and %testresults) {
   }
 }
 
+# signature matching
+if ($matchsigs)
+{
+  print "doing signature matching...\n" if ($verbose) ;
+
+  my $matches = 0;
+  foreach my $sigtomatch (keys %matchresults)
+  {
+    if ( eq_deeply(\%testresults, $matchresults{$sigtomatch}) )
+    {
+      $matches++ ;
+      print "Perfect match: $sigtomatch\n";
+    }
+  }
+  if ($matches == 0)
+  {
+    print "No perfect match. Nice, fuzzy, statistical matching on the TODO list.\n" ;
+  }
+}
+
 # write signature to file
 if ($writesig)
 {
   open SAVESIG, ">" . $writesig or die ("Couldn't open $writesig for writing signature: $!\n");
-  local $Data::Dumper::Sortkeys = 1;
-  my $savesig = Dumper((\%testresults));
+  $Data::Dumper::Sortkeys = 1;
+  $Data::Dumper::Purity = 1;
+  my $savesig = Dumper(\%testresults);
   print SAVESIG $savesig;
   close SAVESIG;
 }
