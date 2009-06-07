@@ -453,7 +453,12 @@ sub helper_talk
   use IO::Socket;
   my $sock = new IO::Socket::INET ( PeerAddr => $host, PeerPort => $port, Proto => 'tcp' );
 
-  die "Could not create socket: $!\n" unless $sock;
+  unless ($sock)
+  {
+    warn "Could not create socket: $!\n" ;
+    $sigref->{'connection_refused'} = 1;
+    return @data;
+  }
   
   $sock->blocking(0);
 
@@ -494,7 +499,9 @@ sub classify_signature()
   my $linenum = 0 ;
   my @headers;
 
-  @data = ( join '', @data ) ;
+  unless (defined $data[0]) { return $sigref; }
+
+  @data = ( join '', @data );
 
   while (@data)
   {
