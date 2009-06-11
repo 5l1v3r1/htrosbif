@@ -678,6 +678,8 @@ sub classify_signature()
         my @tmp = split ( / |,/, $hcontent ) ;
         $signature{'allow_order'} = uc join ",", grep { ! m|^$| } @tmp ;
       }
+      # public (order) arrived in rfc2068, just long enough to shanghai rtsp/1.0, then
+      # disappeared from the revised http/1.1 specification rfc2616 just two years later.
       if ($hname =~ m|^Public$|i)
       {
         my @tmp = split ( / |,/, $hcontent ) ;
