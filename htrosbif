@@ -6,6 +6,7 @@ use Data::Dumper;
 use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
+use POSIX qw(floor);
 use Test::Deep::NoTest;
 use URI;
 use strict;
@@ -44,7 +45,7 @@ Erik Inge Bolsø <knan-rosbif@anduin.net> originally wrote this tool.
 my $verbose;
 my $debug;
 my $resptimeout = 2;
-my $mediumtimeout = 7;
+my $mediumtimeout = 14;
 my $help = 0;
 my $result;
 my $writesig;
@@ -232,7 +233,7 @@ sub test_get_09_knowngood()
 
   if ($#data == -1)
   {
-    delete $signature{'does_keepalive'} if exists $signature{'does_keepalive'};
+    %signature = () ;
     @data = helper_talk($request2, $sigref);
     unless ($#data == -1)
     {
@@ -442,7 +443,7 @@ sub test_get_12_knowngood()
 sub test_doesnotexist_11_knowngood()
 {
   # HTTP/1.1 guaranteed non-existent method request for the known good url.
-  # some simple implementations treats it as a GET and doesn't worry further about it.
+  # some simple implementations treat it as a GET and doesn't worry further.
   my $request  = "DOESNOTEXIST $path HTTP/1.1\r\n";
      $request .= "Host: $host\r\n";
      $request .= "User-Agent: $bland_useragent\r\n";
@@ -509,6 +510,7 @@ sub helper_talk
 {
   my @data;
   my $blarg;
+  my $amountread;
   my $sigref = $_[1] ;
  
   use IO::Socket;
@@ -530,19 +532,38 @@ sub helper_talk
 
   my ($nfound,$timeleft) = select(my $rout=$rin, undef, undef, $mediumtimeout);
 
+  # slow reply? timeout, perhaps?
+  if ($nfound and ($timeleft < ($mediumtimeout / 2)))
+  {
+    $sigref->{'delayed_reply'} = floor($mediumtimeout - $timeleft);
+  }
+
   if ($nfound)
   {
-    while ($nfound and read $sock, $blarg, 5000000)
+    # $amountread = undef means connection closed during the select, or similar.
+    while ($nfound and $amountread = read $sock, $blarg, 5000000)
     {
       push @data, $blarg;
       vec($rin,fileno($sock),1) = 1;
       ($nfound,$timeleft) = select(my $rout=$rin, undef, undef, $mediumtimeout);
+    }
+    if (defined $amountread and $amountread == 0)
+    {
+      # controlled connection close straightaway after the last of the data -
+      # reset timeleft to avoid triggering delayed_close
+      $timeleft = $mediumtimeout;
     }
   };
 
   unless ($nfound)
   {
     $sigref->{'does_keepalive'} = 1; # which is mostly unexpected for our tests.
+  }
+
+  # connection slow to close?
+  if ($nfound and (not defined ($amountread) or $amountread < 1) and ($timeleft < ($mediumtimeout / 2)))
+  {
+    $sigref->{'delayed_close'} = floor($mediumtimeout - $timeleft);
   }
 
   close($sock);
