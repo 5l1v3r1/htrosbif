@@ -130,9 +130,9 @@ print "actively fingerprinting...\n" if ($verbose) ;
 # is_namevhost();
 
 # friendly requests, should mostly work
-$tmpresult = &test_get_09_knowngood(); add_testresult('get_09_knowngood', $tmpresult );
 $tmpresult = &test_get_10_knowngood(); add_testresult('get_10_knowngood', $tmpresult );
 $tmpresult = &test_get_11_knowngood(); add_testresult('get_11_knowngood', $tmpresult );
+$tmpresult = &test_get_09_knowngood(); add_testresult('get_09_knowngood', $tmpresult );
 $tmpresult = &test_options_11_star(); add_testresult('options_11_star', $tmpresult );
 $tmpresult = &test_options_11_knowngood(); add_testresult('options_11_knowngood', $tmpresult );
 
