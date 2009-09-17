@@ -25,7 +25,7 @@ htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-w|--writesig 
 
 htrosbif [-?|-h|--help]
 
-<url> should be a valid url returning a 200 series status code - no redirect or authentication. This restriction may be lifted in the future.
+<url> should be a valid url returning a 200 series status code to a GET request - no redirect or authentication. This restriction may be lifted in the future.
 
 =head1 DESCRIPTION
 
@@ -358,6 +358,13 @@ sub test_get_10_knowngood()
     delete $signature{'does_keepalive'};
     $signature{'http_unexpected_keepalive'} = 1;
   }
+  if (   (exists $signature{'response_code'} and $signature{'response_code'} != "200")
+      or  exists $signature{'connection_refused'} )
+  {
+    print STDERR "The web server isn't responding politely to a plain HTTP/1.0 GET request.\n";
+    print STDERR "Signature matching and generation won't work reliably - bailing out.\n";
+    exit(1);
+  }
   return $sigref;
 }
 
@@ -573,7 +580,7 @@ sub helper_talk
 
   unless ($sock)
   {
-    warn "Could not create socket: $!\n" ;
+    print STDERR "Could not create socket: $!\n" if $verbose;
     $sigref->{'connection_refused'} = 1;
     return @data;
   }
