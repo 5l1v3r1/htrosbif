@@ -9,6 +9,7 @@ use Pod::Usage;
 use POSIX qw(floor);
 use Test::Deep::NoTest;
 use URI;
+use List::MoreUtils qw(uniq);
 use strict;
 
 =encoding utf8
@@ -180,6 +181,7 @@ if ($matchsigs)
   }
   foreach my $sigtomatch (keys %matchresults)
   {
+    print "fuzzy matching: comparing to $sigtomatch\n" if ($debug);
     foreach my $sigpart (keys %testresults)
     {
       my $sig1 = deref_sig ($sigpart, \%testresults);
@@ -187,14 +189,17 @@ if ($matchsigs)
 
       if ( eq_deeply($sig1, $sig2))
       {
+        print "fuzzy matching: perfect match on $sigpart, 100 points\n" if ($debug);
         $matchscores{$sigtomatch} += 100;
       }
       else
       {
         my $score = compare_sigs ($sig1, $sig2);
+        print "fuzzy matching: partial match on $sigpart, $score points\n" if ($score > 0 and $debug);
         if ($score > 0) { $matchscores{$sigtomatch} += $score; }
       }
     }
+    print "fuzzy matching: total score $matchscores{$sigtomatch}\n" if ($matchscores{$sigtomatch} > 0 and $debug);
   }
   foreach my $match (sort { $matchscores{$b} cmp $matchscores{$a} } keys %matchscores)
   {
@@ -261,7 +266,99 @@ sub deref_sig
 
 sub compare_sigs
 {
-  return 0;
+  my $sig1 = $_[0];
+  my $sig2 = $_[1];
+
+  my $count = uniq (keys %$sig1, keys %$sig2);
+  my $matchscore = 10;
+  my $perfectmatch = 100;
+  my $score = 0;
+
+  foreach my $key (uniq (keys %$sig1, keys %$sig2))
+  {
+    if ( exists $sig1->{$key} and
+         exists $sig2->{$key} and
+         $sig1->{$key} eq $sig2->{$key})
+    {
+      $score+=$matchscore;
+    }
+    elsif ( exists $sig1->{$key} and
+            exists $sig2->{$key} and
+            $key =~ 'order' )
+    {
+      my @order1 = split(',', $sig1->{$key});
+      my @order2 = split(',', $sig2->{$key});
+
+      for (my $x=0; $x < ($#order1+1); $x++)
+      {
+	my $keymatched = 0;
+        for (my $y=0; $y < ($#order2+1); $y++)
+        {
+	  if ($order1[$x] eq $order2[$y])
+          {
+            $keymatched = 1;
+#            print "match! $order1[$x] eq $order2[$y]\n";
+          }
+        }
+        if ($keymatched == 0)
+        {
+#          print "no match! removing $order1[$x] from " . join (',',@order1) . "\n";
+          splice(@order1, $x, 1); # didn't find header x in sig2, delete from sig1
+          $x--;
+        }
+#        print '@order1 = ' . join (',',@order1) . "\n";
+#        print '@order2 = ' . join (',',@order2) . "\n";
+      }
+      # testresult is a ordered superset of the signature
+      if (join (',',@order1) eq $sig2->{$key})
+      {
+        $score+=($matchscore * 3 / 4);
+        print ("$sig1->{$key} superset of $sig2->{$key}\n") if ($debug >= 2);
+        next;
+      }
+
+      my @order3 = split(',', $sig1->{$key}); # refresh @order1 to check for subsets properly
+      for (my $x=0; $x < ($#order2+1); $x++)
+      {
+	my $keymatched = 0;
+        for (my $y=0; $y < ($#order3+1); $y++)
+        {
+	  if ($order2[$x] eq $order3[$y])
+          {
+            $keymatched = 1;
+#            print "match! $order2[$x] eq $order3[$y]\n";
+          }
+        }
+        if ($keymatched == 0)
+        {
+#          print "no match! removing $order2[$x] from " . join (',',@order2) . "\n";
+          splice(@order2, $x, 1); # didn't find header x in sig1, delete from sig2
+          $x--;
+        }
+#        print '@order3 = ' . join(',',@order3) . "\n";
+#        print '@order2 = ' . join(',',@order2) . "\n";
+      }
+      # testresult is a ordered subset of the signature
+      if (join (',',@order2) eq $sig1->{$key})
+      {
+        $score+=($matchscore * 3 / 4);
+        print ("$sig1->{$key} subset of $sig2->{$key}\n") if ($debug >= 2);;
+        next;
+      }
+
+      # intersection of testresult and signature has more than one element, and same ordering - a bit weaker match
+      if ( ($#order1+1) > 1 and join (',',@order2) eq join (',',@order1))
+      {
+        $score+=($matchscore / 2);
+        print ("intersection " . join (',',@order2) . " of $sig1->{$key} and $sig2->{$key} has same order\n") if ($debug >= 2);;
+        next;
+      }
+
+#      print "$sig1->{$key} and $sig2->{$key} does not match.\n";
+    }
+  }
+
+  return floor ($score * $perfectmatch / ($matchscore * $count));
 }
 
 ## THE ACTUAL TESTS
