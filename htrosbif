@@ -141,6 +141,7 @@ $tmpresult = &test_get_12_knowngood(); add_testresult('get_12_knowngood', $tmpre
 
 # error-provoking requests
 $tmpresult = &test_doesnotexist_11_knowngood(); add_testresult('doesnotexist_11_knowngood', $tmpresult );
+$tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult );
 $tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult );
 
 # evil requests
@@ -398,6 +399,16 @@ sub test_get_09_knowngood()
 
     my $sigref2 = classify_signature(@data);
     my @sig2keys = keys %$sigref2;
+
+    # irrelevant for http/0.9, false positive
+    if (exists $sigref2->{'http_response_as_html'})
+    {
+      delete $sigref2->{'http_response_as_html'};
+      delete $sigref2->{'response_code'};
+      delete $sigref2->{'response_text'};
+      @sig2keys = ( );
+    }
+
     if ($#sig2keys > -1)
     {
       $signature{'http09_returnsheaders'} = 1;
@@ -409,6 +420,7 @@ sub test_get_09_knowngood()
   {
     $signature{'http09_nodata'} = 1;
   }
+
   if (exists $signature{'does_keepalive'})
   {
     delete $signature{'does_keepalive'};
@@ -612,6 +624,39 @@ sub test_doesnotexist_11_knowngood()
 
   if ($debug and @data) {
     print "test_doesnotexist_11_knowngood() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1;
+  }
+  return $sigref;
+}
+
+sub test_hairy_method_11_knowngood()
+{
+  # HTTP/1.1 guaranteed non-existent method request for the known good url.
+  # nginx had a behaviour change on methods with _ in them at some point.
+  my $request  = "HAIRY_METHOD $path HTTP/1.1\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print "test_hairy_method_11_knowngood() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print "test_hairy_method_11_knowngood() returned data (if any):\n" ;
     foreach (join '',@data) {
       print "$_\n";
     }
