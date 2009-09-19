@@ -840,6 +840,12 @@ sub classify_signature()
       next LINE;
     }
 
+    # Don't look too hard - shortcircuit if we see <HTML>
+    if ($line =~ m|<[Hh][Tt][Mm][Ll]>|)
+    {
+      last LINE;
+    }
+
     # look for the http response
     if ($line =~ m|^([Hh][Tt][Tt][Pp])/(\d\.\d)| and not exists $signature{'http'})
     {
