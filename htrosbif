@@ -2,15 +2,16 @@
 
 package htrosbif;
 
-use Data::Dumper;
+use strict;
+
 use File::Basename;
 use Getopt::Long;
+use JSON::XS;
+use List::MoreUtils qw(uniq);
 use Pod::Usage;
 use POSIX qw(floor);
 use Test::Deep::NoTest;
 use URI;
-use List::MoreUtils qw(uniq);
-use strict;
 
 =encoding utf8
 
@@ -119,9 +120,7 @@ if ($matchsigs)
     open SIGNAME, "<" . $signame or next SIG;
     my $sig = join '', <SIGNAME> ;
     close SIGNAME ;
-    my $VAR1;
-    eval $sig ;
-    $matchresults{ basename $signame } = $VAR1 ;
+    $matchresults{ basename $signame } = decode_json($sig);
   }
   if ($verbose) { print keys (%matchresults) . " signatures loaded.\n" ; }
 }
@@ -211,9 +210,7 @@ if ($matchsigs)
 if ($writesig)
 {
   open SAVESIG, ">" . $writesig or die ("Couldn't open $writesig for writing signature: $!\n");
-  $Data::Dumper::Sortkeys = 1;
-  $Data::Dumper::Purity = 1;
-  my $savesig = Dumper(\%testresults);
+  my $savesig = JSON::XS->new->pretty(1)->encode(\%testresults);
   print SAVESIG $savesig;
   close SAVESIG;
 }
