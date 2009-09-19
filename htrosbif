@@ -310,7 +310,7 @@ sub compare_sigs
       if (join (',',@order1) eq $sig2->{$key})
       {
         $score+=($matchscore * 3 / 4);
-        print ("$sig1->{$key} superset of $sig2->{$key}\n") if ($debug >= 2);
+        print ("$sig1->{$key} superset of $sig2->{$key}\n") if ($debug and $debug >= 2);
         next;
       }
 
@@ -339,7 +339,7 @@ sub compare_sigs
       if (join (',',@order2) eq $sig1->{$key})
       {
         $score+=($matchscore * 3 / 4);
-        print ("$sig1->{$key} subset of $sig2->{$key}\n") if ($debug >= 2);;
+        print ("$sig1->{$key} subset of $sig2->{$key}\n") if ($debug and $debug >= 2);;
         next;
       }
 
@@ -347,7 +347,7 @@ sub compare_sigs
       if ( ($#order1+1) > 1 and join (',',@order2) eq join (',',@order1))
       {
         $score+=($matchscore / 2);
-        print ("intersection " . join (',',@order2) . " of $sig1->{$key} and $sig2->{$key} has same order\n") if ($debug >= 2);;
+        print ("intersection " . join (',',@order2) . " of $sig1->{$key} and $sig2->{$key} has same order\n") if ($debug and $debug >= 2);;
         next;
       }
 
