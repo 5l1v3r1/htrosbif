@@ -439,10 +439,6 @@ sub test_get_09_knowngood()
     }
     else { $signature{'http09_valid'} = 1; }
   }
-  else
-  {
-    $signature{'http09_nodata'} = 1;
-  }
 
   if (exists $signature{'does_keepalive'})
   {
@@ -473,6 +469,14 @@ sub test_get_10_knowngood()
   my $sigref = \%signature ;
 
   my @data = helper_talk($request, $sigref);
+
+  if (exists $signature{'connection_closed'})
+  {
+    # this basic a request really ought to work, but
+    # I've seen fun threading bugs in unstable servers - so try again
+    delete $signature{'connection_closed'};
+    @data = helper_talk($request, $sigref);
+  }
 
   if ($debug and @data) {
     print "test_get_10_knowngood() returned data (if any):\n" ;
@@ -865,6 +869,8 @@ sub helper_talk
   }
 
   close($sock);
+
+  if ($#data == -1) { $sigref->{'connection_closed'} = 1; }
 
   return @data;
 }
