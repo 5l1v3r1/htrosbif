@@ -1,9 +1,9 @@
 URLS=( 'http://localhost:8080/' \
 'http://localhost:631/' \
 'http://localhost:8081/' \
-'http://localhost:8082/' \
+#'http://localhost:8082/' \
 'http://localhost:8083/' \
-'http://localhost:8084/' \
+#'http://localhost:8084/' \
 'http://localhost:8085/' \
 'http://localhost:8086/' \
 'http://localhost:8087/' \
@@ -22,14 +22,19 @@ URLS=( 'http://localhost:8080/' \
 'http://localhost:8100/' \
 'http://localhost:8101/' \
 'http://localhost:8102/' \
+'http://localhost:8103/' \
+'http://localhost:8104/' \
+'http://localhost:8105/' \
+'http://localhost:8106/' \
+'http://localhost:8107/' \
 ) ;
 
 NAMES=( 'cern-httpd-3.0A' \
 'cups-1.3.9' \
-'jetty-1.3.5-demoapp' \
-'jetty-1.3.5-fileserver' \
-'jetty-2.4.9-demoapp' \
-'jetty-2.4.9-fileserver' \
+'jetty-1.3.5' \
+#'jetty-1.3.5-fileserver' \
+'jetty-2.4.9' \
+#'jetty-2.4.9-fileserver' \
 'boa-0.94.13' \
 'apache-1.2.6' \
 'apache-1.2.6-php3-loaded' \
@@ -46,7 +51,12 @@ NAMES=( 'cern-httpd-3.0A' \
 'nginx-0.6.39' \
 'nginx-0.7.62' \
 'nginx-0.8.15' \
-'jetty-3.0.6-demoapp' \
-'jetty-3.1.8-demoapp' \
+'jetty-3.0.6' \
+'jetty-3.1.8' \
+'jetty-4.0.6' \
+'jetty-4.1.4' \
+'jetty-4.2.19' \
+'jetty-4.2.24' \
+'jetty-6.1.20' \
 ) ;
 
