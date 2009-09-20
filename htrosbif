@@ -960,6 +960,7 @@ sub classify_signature()
   # mildly unexpected otherwise
   unless (exists $signature{'http_version'})
   {
+    delete $signature{'quirk_whitespace_before_http_response'}; # we didn't get any http response after all, so this is bogus
     # grope through the data looking for error codes.
     # the server may have sent a html error page with the http response embedded.
     # some boa releases do this
