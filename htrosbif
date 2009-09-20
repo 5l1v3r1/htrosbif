@@ -201,7 +201,7 @@ if ($matchsigs)
     }
     print "fuzzy matching: total score $matchscores{$sigtomatch}\n" if ($matchscores{$sigtomatch} > 0 and $debug);
   }
-  foreach my $match (sort { $matchscores{$b} cmp $matchscores{$a} } keys %matchscores)
+  foreach my $match (sort { $matchscores{$b} <=> $matchscores{$a} } keys %matchscores)
   {
     print "Fuzzy match ($matchscores{$match}): $match\n";
   }

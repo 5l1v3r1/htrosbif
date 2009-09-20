@@ -27,6 +27,7 @@ URLS=( 'http://localhost:8080/' \
 'http://localhost:8105/' \
 'http://localhost:8106/' \
 'http://localhost:8107/' \
+'http://localhost:8108/' \
 ) ;
 
 NAMES=( 'cern-httpd-3.0A' \
@@ -58,5 +59,6 @@ NAMES=( 'cern-httpd-3.0A' \
 'jetty-4.2.19' \
 'jetty-4.2.24' \
 'jetty-6.1.20' \
+'thttpd-2.25b' \
 ) ;
 
