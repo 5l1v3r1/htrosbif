@@ -28,6 +28,8 @@ URLS=( 'http://localhost:8080/' \
 'http://localhost:8106/' \
 'http://localhost:8107/' \
 'http://localhost:8108/' \
+'http://localhost:8109/' \
+'http://localhost:8110/' \
 ) ;
 
 NAMES=( 'cern-httpd-3.0A' \
@@ -60,5 +62,7 @@ NAMES=( 'cern-httpd-3.0A' \
 'jetty-4.2.24' \
 'jetty-6.1.20' \
 'thttpd-2.25b' \
+'tomcat-3.0' \
+'tomcat-3.0-oldconnector' \
 ) ;
 

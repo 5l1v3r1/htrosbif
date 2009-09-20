@@ -5,13 +5,15 @@ package htrosbif;
 use strict;
 
 use File::Basename;
-use Getopt::Long;
+use Getopt::Long qw(:config no_ignore_case);
 use JSON::XS;
 use List::MoreUtils qw(uniq);
 use Pod::Usage;
 use POSIX qw(floor);
 use Test::Deep::NoTest;
 use URI;
+
+use constant VERSION => "alpha 2 - fuzzy" ;
 
 =encoding utf8
 
@@ -26,6 +28,8 @@ htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-m|--matchsigs
 htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-w|--writesig <signature file>] <url>
 
 htrosbif [-?|-h|--help]
+
+htrosbif [-V|--version]
 
 <url> should be a valid url returning a 200 series status code to a GET request - no redirect or authentication. This restriction may be lifted in the future.
 
@@ -44,6 +48,7 @@ Erik Inge Bolsø <knan-rosbif@anduin.net> originally wrote this tool.
 
 =cut
 
+my $version;
 my $verbose;
 my $debug;
 my $resptimeout = 2;
@@ -59,13 +64,20 @@ my $bland_useragent = 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)' ;
 $result = GetOptions (	'writesig|w=s' => \$writesig,
 			'matchsigs|m=s'=> \$matchsigs,
 			'verbose|v'    => \$verbose,
+			'version|V'    => \$version,
 			'timeout=i'    => \$resptimeout,
 			'debug|d=i'    => \$debug,
                       	'help|h|?'     => \$help);
 
 pod2usage(-exitstatus=>0, -verbose=>2) if $help;
 
-my $url = $ARGV[0] || "http://127.0.0.1:8080/";
+if ($version)
+{
+  print "htrosbif " . VERSION . "\n";
+  exit 0;
+}
+
+my $url = $ARGV[0] or die "No url given, nothing to do. -h for help.\n";
 my $uri = URI->new($url);
 my $host = $uri->host;
 my $port = $uri->port;
@@ -213,7 +225,7 @@ if ($matchsigs)
   }
   foreach my $match (sort { $matchscores{$b} <=> $matchscores{$a} } keys %matchscores)
   {
-    print "Fuzzy match ($matchscores{$match}): $match\n";
+    print "Fuzzy match ($matchscores{$match}/$perfectscore): $match\n";
   }
 }
 
@@ -277,6 +289,7 @@ sub compare_sigs
   my $sig1 = $_[0];
   my $sig2 = $_[1];
 
+  # FIXME: easily changeable keys should have lower weight - response_text and similar
   my $count = uniq (keys %$sig1, keys %$sig2);
   my $matchscore = 10;
   my $perfectmatch = 100;
