@@ -826,13 +826,14 @@ sub classify_signature()
     chomp $line ;
     $/ = $tmp ;
 
-    if ($line =~ /^\s+(\S+)/)
+    if (($#linestmp > -1) and $line =~ /^\s+(\S+.+)/)
     {
-      print "classify preprocessing: folding line '$line' into previous\n" if $debug;
+      print "classify preprocessing: folding line '$1' into previous '$linestmp[$#linestmp]'\n" if $debug;
       $linestmp[$#linestmp] = $linestmp[$#linestmp] . $1 ;
+      next;
     }
 
-    if ($#linestmp > 1 and $line =~ /^$/)
+    if ($#linestmp > 0 and $line =~ /^$/)
     {
       last LINEPRE; # crlfcrlf - end of headers
     }
