@@ -149,25 +149,25 @@ $tmpresult = &test_options_11_star(); add_testresult('options_11_star', $tmpresu
 $tmpresult = &test_options_11_knowngood(); add_testresult('options_11_knowngood', $tmpresult );
 
 # borderline requests
+$tmpresult = &test_get_11_headercontinuation_kind(); add_testresult('get_11_headercontinuation_kind', $tmpresult );
 $tmpresult = &test_get_12_knowngood(); add_testresult('get_12_knowngood', $tmpresult );
+$tmpresult = &test_get_11_headercontinuation(); add_testresult('get_11_headercontinuation', $tmpresult );
 
 # error-provoking requests
-$tmpresult = &test_doesnotexist_11_knowngood(); add_testresult('doesnotexist_11_knowngood', $tmpresult );
-$tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult );
 $tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult );
+
+$tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult );
+$tmpresult = &test_doesnotexist_11_knowngood();
+# play down the significance of the hairy_method test, mostly a small nginx quirk
+if ( eq_deeply( $tmpresult, deref_sig ('hairy_method_11_knowngood', \%testresults) ) )
+{
+  delete $testresults{'hairy_method_11_knowngood'};
+  $tmpresult->{'underscore_method_ok'} = 1;
+}
+add_testresult('doesnotexist_11_knowngood', $tmpresult );
 
 # evil requests
 # (none yet)
-
-# play down the significance of the hairy_method test, it's just a small nginx quirk until proven otherwise
-if ( eq_deeply( deref_sig ('doesnotexist_11_knowngood', \%testresults), deref_sig ('hairy_method_11_knowngood', \%testresults) ) )
-{
-  my $tmpsig = &deref_sig ('doesnotexist_11_knowngood', \%testresults);
-  delete $testresults{'doesnotexist_11_knowngood'};
-  delete $testresults{'hairy_method_11_knowngood'};
-  $tmpsig->{'underscore_method_ok'} = 1;
-  add_testresult('doesnotexist_11_knowngood', $tmpsig );
-}
 
 # dump results
 if ($verbose and %testresults) {
@@ -517,6 +517,80 @@ sub test_get_11_knowngood()
 
   if ($debug and @data) {
     print "test_get_11_knowngood() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1;
+  }
+  return $sigref;
+}
+
+sub test_get_11_headercontinuation_kind()
+{
+  # HTTP/1.1 fun with header continuation,
+  # i.e. "\r\n\t" in the middle of header values
+  # (being deprecated in current w3c httpbis)
+  # also allowed, but discouraged, in HTTP/1.0 (RFC1945 section 2.2)
+
+  # kind variant - folds User-Agent header
+  my $request  = "GET $path HTTP/1.1\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "User-Agent:\r\n\t$bland_useragent\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print "test_get_11_headercontinuation_kind() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print "test_get_11_headercontinuation_kind() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1;
+  }
+  return $sigref;
+}
+
+sub test_get_11_headercontinuation()
+{
+  # HTTP/1.1 fun with header continuation,
+  # i.e. "\r\n\t" in the middle of header values
+  # (being deprecated in current w3c httpbis)
+  # also allowed, but discouraged, in HTTP/1.0 (RFC1945 section 2.2)
+
+  # less kind variant - folds Host header, very likely to break
+  my $request  = "GET $path HTTP/1.1\r\n";
+     $request .= "Host:\r\n\t$host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print "test_get_11_headercontinuation() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print "test_get_11_headercontinuation() returned data (if any):\n" ;
     foreach (join '',@data) {
       print "$_\n";
     }
