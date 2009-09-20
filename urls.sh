@@ -1,9 +1,9 @@
 URLS=( 'http://localhost:8080/' \
 'http://localhost:631/' \
 'http://localhost:8081/' \
-#'http://localhost:8082/' \
+'http://localhost:8082/' \
 'http://localhost:8083/' \
-#'http://localhost:8084/' \
+'http://localhost:8084/' \
 'http://localhost:8085/' \
 'http://localhost:8086/' \
 'http://localhost:8087/' \
@@ -32,9 +32,9 @@ URLS=( 'http://localhost:8080/' \
 NAMES=( 'cern-httpd-3.0A' \
 'cups-1.3.9' \
 'jetty-1.3.5' \
-#'jetty-1.3.5-fileserver' \
+'nginx-0.8.4' \
 'jetty-2.4.9' \
-#'jetty-2.4.9-fileserver' \
+'nginx-0.8.5' \
 'boa-0.94.13' \
 'apache-1.2.6' \
 'apache-1.2.6-php3-loaded' \

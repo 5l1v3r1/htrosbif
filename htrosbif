@@ -893,6 +893,14 @@ sub classify_signature()
         my @tmp = split ( / |,/, $hcontent ) ;
         $signature{'public_order'} = uc join ",", grep { ! m|^$| } @tmp ;
       }
+      # if we get something weird in Accept-Ranges, record it ... say 'mail' or 'records' or something.
+      if ($hname =~ m|^Accept-Ranges$|i)
+      {
+        if ($hcontent ne 'bytes')
+        {
+          $signature{'accept_ranges'} = $hcontent ;
+        }
+      }
     }
   }
 
@@ -903,7 +911,7 @@ sub classify_signature()
   }
 
   # overeager 100 Continue quirk
-  if (exists $signature{'temp_http'} and exists $signature{'http'})
+  if (exists $signature{'temp_http_version'} and exists $signature{'http_version'})
   {
     $signature{'overeager_100_continue'} = 1;
     delete $signature{'temp_http'};
@@ -915,7 +923,7 @@ sub classify_signature()
   }
 
   # did we really get just a 100 Continue? All right.
-  if (exists $signature{'temp_http'} and not exists $signature{'http'})
+  if (exists $signature{'temp_http_version'} and not exists $signature{'http_version'})
   {
     $signature{'http'}             = $signature{'temp_http'};          delete $signature{'temp_http'};
     $signature{'http_version'}     = $signature{'temp_http_version'};  delete $signature{'temp_http_version'};
@@ -931,10 +939,16 @@ sub classify_signature()
     }
   }
 
+  if (exists $signature{'http'} and $signature{'http'} eq 'HTTP')
+  {
+    # this is the default case, no need to record it. If it's lowercase or RTSP or something, however, keep it...
+    delete $signature{'http'};
+  }
+
   # no http response found at all?
   # expected, for HTTP/0.9
   # mildly unexpected otherwise
-  unless (exists $signature{'http'})
+  unless (exists $signature{'http_version'})
   {
     # grope through the data looking for error codes.
     # the server may have sent a html error page with the http response embedded.
