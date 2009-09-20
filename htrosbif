@@ -147,6 +147,16 @@ $tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpre
 # evil requests
 # (none yet)
 
+# play down the significance of the hairy_method test, it's just a small nginx quirk until proven otherwise
+if ( eq_deeply( deref_sig ('doesnotexist_11_knowngood', \%testresults), deref_sig ('hairy_method_11_knowngood', \%testresults) ) )
+{
+  my $tmpsig = &deref_sig ('doesnotexist_11_knowngood', \%testresults);
+  delete $testresults{'doesnotexist_11_knowngood'};
+  delete $testresults{'hairy_method_11_knowngood'};
+  $tmpsig->{'underscore_method_ok'} = 1;
+  add_testresult('doesnotexist_11_knowngood', $tmpsig );
+}
+
 # dump results
 if ($verbose and %testresults) {
   print "\n";
