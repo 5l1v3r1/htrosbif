@@ -945,8 +945,15 @@ sub classify_signature()
     }
 
     # Don't look too hard - shortcircuit if we see <HTML>
-    if ($line =~ m|<[Hh][Tt][Mm][Ll]>|)
+    if ( not exists $signature{'http'} and
+         (   $line =~ m|(^<[Hh][Tt][Mm][Ll]>)|
+          or $line =~ m|(^<?[Xx][Mm][Ll])|
+          or $line =~ m|(^<!--)|
+          or $line =~ m|(^<![Dd][Oo][Cc][Tt][Yy][Pp][Ee])|
+         )
+       )
     {
+      print "shortcircuit: found $1 before any HTTP response\n" if $debug;
       last LINE;
     }
 
