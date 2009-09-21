@@ -421,7 +421,9 @@ sub test_get_09_knowngood()
     }
 
     my $sigref2 = classify_signature(@data);
-    my @sig2keys = keys %$sigref2;
+
+    # ignore.
+    if (exists $sigref2->{'response_body'}) { delete $sigref2->{'response_body'} ; }
 
     # irrelevant for http/0.9, false positive
     if (exists $sigref2->{'http_response_as_html'})
@@ -429,8 +431,9 @@ sub test_get_09_knowngood()
       delete $sigref2->{'http_response_as_html'};
       delete $sigref2->{'response_code'};
       delete $sigref2->{'response_text'};
-      @sig2keys = ( );
     }
+
+    my @sig2keys = keys %$sigref2;
 
     if ($#sig2keys > -1)
     {
@@ -491,6 +494,7 @@ sub test_get_10_knowngood()
     delete $signature{'does_keepalive'};
     $signature{'http_unexpected_keepalive'} = 1;
   }
+
   if (   (exists $signature{'response_code'} and $signature{'response_code'} != "200")
       or  exists $signature{'connection_refused'} )
   {
@@ -532,6 +536,7 @@ sub test_get_11_knowngood()
     delete $signature{'does_keepalive'};
     $signature{'http11_ignores_connection_close'} = 1;
   }
+
   return $sigref;
 }
 
@@ -569,6 +574,7 @@ sub test_get_11_headercontinuation_kind()
     delete $signature{'does_keepalive'};
     $signature{'http11_ignores_connection_close'} = 1;
   }
+
   return $sigref;
 }
 
@@ -606,6 +612,7 @@ sub test_get_11_headercontinuation()
     delete $signature{'does_keepalive'};
     $signature{'http11_ignores_connection_close'} = 1;
   }
+
   return $sigref;
 }
 
@@ -703,6 +710,7 @@ sub test_get_12_knowngood()
     delete $signature{'does_keepalive'};
     $signature{'http11_ignores_connection_close'} = 1;
   }
+
   return $sigref;
 }
 
@@ -899,6 +907,8 @@ sub classify_signature()
 
   # preprocessing: do header line folding, cut everything after the header
   my @linestmp;
+  my $restisbody = 0;
+  my @body;
   LINEPRE: foreach my $line (@lines)
   {
     my $tmp = $/ ;
@@ -906,7 +916,7 @@ sub classify_signature()
     chomp $line ;
     $/ = $tmp ;
 
-    if (($#linestmp > -1) and $line =~ /^\s+(\S+.+)/)
+    if (($restisbody == 0) and ($#linestmp > -1) and ($line =~ /^\s+(\S+.+)/))
     {
       print "classify preprocessing: folding line '$1' into previous '$linestmp[$#linestmp]'\n" if $debug;
       $linestmp[$#linestmp] = $linestmp[$#linestmp] . $1 ;
@@ -915,9 +925,17 @@ sub classify_signature()
 
     if ($#linestmp > 0 and $line =~ /^$/)
     {
-      last LINEPRE; # crlfcrlf - end of headers
+      $restisbody = 1; # crlfcrlf - end of headers
+      next LINEPRE;
     }
-    push @linestmp, $line;
+    if ($restisbody == 1)
+    {
+      push @body, $line;
+    }
+    else
+    {
+      push @linestmp, $line;
+    }
   }
   @lines = @linestmp ;
 
@@ -953,6 +971,7 @@ sub classify_signature()
          )
        )
     {
+      $signature{'response_body'} = 1;
       print "shortcircuit: found $1 before any HTTP response\n" if $debug;
       last LINE;
     }
@@ -1056,6 +1075,11 @@ sub classify_signature()
     delete $signature{'http'};
   }
 
+  if ($#body > -1)
+  {
+    $signature{'response_body'} = 1;
+  }
+
   # no http response found at all?
   # expected, for HTTP/0.9
   # mildly unexpected otherwise
@@ -1072,6 +1096,7 @@ sub classify_signature()
          $signature{'response_code'} = $1;
          $signature{'response_text'} = $2;
          $signature{'http_response_as_html'} = 1;
+         delete $signature{'response_body'}; # implicit in http_response_as_html, really
          last FALLBACKLINE;
       }
     }

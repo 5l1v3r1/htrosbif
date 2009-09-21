@@ -32,6 +32,12 @@ URLS=( 'http://localhost:8080/' \
 'http://localhost:8110/' \
 'http://localhost:8111/' \
 'http://localhost:8112/' \
+'http://localhost:8113/' \
+'http://localhost:8114/index.jsp' \
+'http://localhost:8115/index.jsp' \
+'http://localhost:8116/' \
+'http://localhost:8117/' \
+'http://localhost:8118/' \
 ) ;
 
 NAMES=( 'cern-httpd-3.0A' \
@@ -68,5 +74,11 @@ NAMES=( 'cern-httpd-3.0A' \
 'tomcat-3.0-oldconnector' \
 'tomcat-3.1.1' \
 'tomcat-6.0.20' \
+'tomcat-5.5.28' \
+'tomcat-4.1.40' \
+'tomcat-4.1.40-oldconnector' \
+'tomcat-5.0.30' \
+'apache-2.2.13-basic' \
+'apache-2.2.13-php-5.3.0-used' \
 ) ;
 
