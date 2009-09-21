@@ -502,6 +502,10 @@ sub test_get_10_knowngood()
     print STDERR "Signature matching and generation won't work reliably - bailing out.\n";
     exit(1);
   }
+
+  # the 99.9% case - we don't want this to signal a likeness
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; } else { $signature{'no_response_body'} = 1; }
+
   return $sigref;
 }
 
@@ -536,6 +540,9 @@ sub test_get_11_knowngood()
     delete $signature{'does_keepalive'};
     $signature{'http11_ignores_connection_close'} = 1;
   }
+
+  # the 99.9% case - we don't want this to signal a likeness
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; } else { $signature{'no_response_body'} = 1; }
 
   return $sigref;
 }
@@ -575,6 +582,9 @@ sub test_get_11_headercontinuation_kind()
     $signature{'http11_ignores_connection_close'} = 1;
   }
 
+  # irrelevant
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
+
   return $sigref;
 }
 
@@ -612,6 +622,9 @@ sub test_get_11_headercontinuation()
     delete $signature{'does_keepalive'};
     $signature{'http11_ignores_connection_close'} = 1;
   }
+
+  # irrelevant
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
 
   return $sigref;
 }
@@ -711,6 +724,9 @@ sub test_get_12_knowngood()
     $signature{'http11_ignores_connection_close'} = 1;
   }
 
+  # irrelevant
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
+
   return $sigref;
 }
 
@@ -744,6 +760,10 @@ sub test_doesnotexist_11_knowngood()
     delete $signature{'does_keepalive'};
     $signature{'http11_ignores_connection_close'} = 1;
   }
+
+  # irrelevant
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
+
   return $sigref;
 }
 
@@ -777,6 +797,10 @@ sub test_hairy_method_11_knowngood()
     delete $signature{'does_keepalive'};
     $signature{'http11_ignores_connection_close'} = 1;
   }
+
+  # irrelevant
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
+
   return $sigref;
 }
 
@@ -809,6 +833,10 @@ sub test_get_20_knowngood()
     delete $signature{'does_keepalive'};
     $signature{'http_unexpected_keepalive'} = 1;
   }
+
+  # irrelevant
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
+
   return $sigref;
 }
 
