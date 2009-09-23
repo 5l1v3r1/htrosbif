@@ -996,11 +996,12 @@ sub classify_signature()
       next LINE;
     }
 
-    # Don't look too hard - shortcircuit if we see <HTML>
+    # Don't look too hard - shortcircuit if we see <HTML><?xml> or similar.
     if ( not exists $signature{'http'} and
          (   $line =~ m|(^<[Hh][Tt][Mm][Ll]>)|
           or $line =~ m|(^<?[Xx][Mm][Ll])|
           or $line =~ m|(^<!--)|
+          or $line =~ m|(^<[Hh]\d)|
           or $line =~ m|(^<![Dd][Oo][Cc][Tt][Yy][Pp][Ee])|
          )
        )
@@ -1023,6 +1024,14 @@ sub classify_signature()
         unless ($1 eq " ") { $signature{'quirk_http_to_responsecode_whitespace'} = $1; }
         unless ($3 eq " ") { $signature{'quirk_responsecode_to_responsetext_whitespace'} = $3; }
       }
+    }
+
+    # look for CONFUSEDBUT 200 OK  -thttpd quirk
+    if ($line =~ m|^(\S+)\s+(\d{3})\s+(.+)| and not exists $signature{'http'})
+    {
+      $signature{'http'} = $1;
+      $signature{'response_code'} = $2;
+      $signature{'response_text'} = $3;
     }
 
     if ($linenum == 1 and not exists $signature{'http'} and not exists $signature{'temp_http'} and $line =~ m|^\s*$|)
@@ -1123,12 +1132,12 @@ sub classify_signature()
     # grope through the data looking for error codes.
     # the server may have sent a html error page with the http response embedded.
     # some boa releases do this
-    FALLBACKLINE: foreach my $line (grep { m|<.+?>\d{3}.*</.+?>| } @lines)
+    FALLBACKLINE: foreach my $line (grep { m|<.+?>(?:Error: )*\d{3}.*</.+?>| } @lines)
     {
-      if ($line =~ m|<.+?>(\d{3})\s*(.+?)</.+?>|)
+      if ($line =~ m|<.+?>(?:Error: )*(\d{3})\s*([^<]*?)</.+?>|)
       {
          $signature{'response_code'} = $1;
-         $signature{'response_text'} = $2;
+         $signature{'response_text'} = $2 if $2;
          $signature{'http_response_as_html'} = 1;
          delete $signature{'response_body'}; # implicit in http_response_as_html, really
          last FALLBACKLINE;
