@@ -851,6 +851,12 @@ sub helper_talk
   my $amountread;
   my $sigref = $_[1] ;
  
+  # FIXME: do a gethostbyname and cache the result, so we don't get confused
+  #  by heterogenous DNS round-robin clusters (and yes, we do get quite
+  #  useless results in that case) ... of course, there may be internal
+  #  load balancers doing the roundrobining as well, but let's get simpler
+  #  cases right first.
+
   use IO::Socket;
   my $sock = new IO::Socket::INET ( PeerAddr => $host, PeerPort => $port, Proto => 'tcp' );
 

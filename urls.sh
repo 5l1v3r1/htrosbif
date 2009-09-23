@@ -38,6 +38,18 @@ URLS=( 'http://localhost:8080/' \
 'http://localhost:8116/' \
 'http://localhost:8117/' \
 'http://localhost:8118/' \
+'http://localhost:8119/' \
+'http://localhost:8120/' \
+'http://localhost:8121/' \
+'http://localhost:8122/' \
+'http://localhost:8123/' \
+'http://localhost:8124/' \
+'http://localhost:8125/' \
+'http://localhost:8126/' \
+'http://localhost:8127/' \
+'http://localhost:8128/' \
+'http://localhost:8129/' \
+'http://localhost:8130/' \
 ) ;
 
 NAMES=( 'cern-httpd-3.0A' \
@@ -80,5 +92,17 @@ NAMES=( 'cern-httpd-3.0A' \
 'tomcat-5.0.30' \
 'apache-2.2.13-basic' \
 'apache-2.2.13-php-5.3.0-used' \
+'lighttpd-1.4.23' \
+'lighttpd-1.4.22' \
+'lighttpd-1.4.21' \
+'lighttpd-1.4.20' \
+'lighttpd-1.4.19' \
+'lighttpd-1.4.18' \
+'lighttpd-1.4.17' \
+'lighttpd-1.4.16' \
+'lighttpd-1.4.15' \
+'lighttpd-1.4.13' \
+'lighttpd-1.4.11' \
+'lighttpd-1.5-svn2621' \
 ) ;
 
