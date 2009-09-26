@@ -1,0 +1,18 @@
+overlays format:
+
+fixed_responses ... if the overlay always is opaque to this test.
+
+optional_responses ... if the overlay may be opaque to this test, depending on config. Allow/deny OPTIONS method and such.
+
+fixed_backend_conditional ... if the overlay generates its own response based on backend behaviour but passes no content through.
+
+alternates ... alternative configured error responses
+
+cleaned_requests ... if the overlay cleans some requests before passing them on to the backend
+
+modified_responses ... if the overlay subtly modifies the backend response before passing it on to us
+
+
+
+... ranking will be a problem. ah well.
+
