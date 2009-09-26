@@ -132,7 +132,10 @@ if ($matchsigs)
     open SIGNAME, "<" . $signame or next SIG;
     my $sig = join '', <SIGNAME> ;
     close SIGNAME ;
-    $matchresults{ basename $signame } = decode_json($sig);
+    $matchresults{ basename $signame } = eval { decode_json($sig); };
+    warn ("Error parsing signature \"$signame\", skipped\n") if ($@);
+    warn ($@) if ($@);
+    delete $matchresults{ basename $signame } if ($@);
   }
   if ($verbose) { print keys (%matchresults) . " signatures loaded.\n" ; }
 }
