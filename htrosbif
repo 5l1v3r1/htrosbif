@@ -151,10 +151,12 @@ $tmpresult = &test_options_11_knowngood(); add_testresult('options_11_knowngood'
 # borderline requests
 $tmpresult = &test_get_11_headercontinuation_kind(); add_testresult('get_11_headercontinuation_kind', $tmpresult );
 $tmpresult = &test_get_12_knowngood(); add_testresult('get_12_knowngood', $tmpresult );
+$tmpresult = &test_get_10_nlonly(); add_testresult('get_10_nlonly', $tmpresult );
 $tmpresult = &test_get_11_headercontinuation(); add_testresult('get_11_headercontinuation', $tmpresult );
 
 # error-provoking requests
 $tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult );
+$tmpresult = &test_get_10_cronly(); add_testresult('get_10_cronly', $tmpresult );
 
 $tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult );
 $tmpresult = &test_doesnotexist_11_knowngood();
@@ -501,6 +503,102 @@ sub test_get_10_knowngood()
     print STDERR "The web server isn't responding politely to a plain HTTP/1.0 GET request.\n";
     print STDERR "Signature matching and generation won't work reliably - bailing out.\n";
     exit(1);
+  }
+
+  # the 99.9% case - we don't want this to signal a likeness
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; } else { $signature{'no_response_body'} = 1; }
+
+  return $sigref;
+}
+
+sub test_get_10_nlonly()
+{
+  # tests a plain HTTP/1.0 request with \n only, mostly expected to work
+  my $request  = "GET $path HTTP/1.0\n";
+     $request .= "Host: $host\n";
+     $request .= "User-Agent: $bland_useragent\n";
+     $request .= "\n";
+
+  if ($debug) { print "test_get_10_nlonly() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if (exists $signature{'connection_closed'})
+  {
+    # this basic a request really ought to work, but
+    # I've seen fun threading bugs in unstable servers - so try again
+    delete $signature{'connection_closed'};
+    @data = helper_talk($request, $sigref);
+  }
+
+  if (exists $signature{'connection_closed'})
+  {
+    return $sigref;
+  }
+
+  if ($debug and @data) {
+    print "test_get_10_nlonly() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http_unexpected_keepalive'} = 1;
+  }
+
+  # the 99.9% case - we don't want this to signal a likeness
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; } else { $signature{'no_response_body'} = 1; }
+
+  return $sigref;
+}
+
+sub test_get_10_cronly()
+{
+  # tests a plain HTTP/1.0 request with \r only, mostly expected to fail or provoke errors
+  my $request  = "GET $path HTTP/1.0\r";
+     $request .= "Host: $host\r";
+     $request .= "User-Agent: $bland_useragent\r";
+     $request .= "\r";
+
+  if ($debug) { print "test_get_10_cronly() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if (exists $signature{'connection_closed'})
+  {
+    # this basic a request really ought to work, but
+    # I've seen fun threading bugs in unstable servers - so try again
+    delete $signature{'connection_closed'};
+    @data = helper_talk($request, $sigref);
+  }
+
+  if (exists $signature{'connection_closed'})
+  {
+    return $sigref;
+  }
+
+  if ($debug and @data) {
+    print "test_get_10_cronly() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http_unexpected_keepalive'} = 1;
   }
 
   # the 99.9% case - we don't want this to signal a likeness
