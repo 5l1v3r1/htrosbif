@@ -28,7 +28,7 @@ htrosbif - Active HTTP fingerprinting and recon tool
 
 =head1 SYNOPSIS
 
-htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-m|--matchsigs <signature dir>] <url>
+htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-m|--matchsigs <signature dir>] [-O|--overlays <overlay dir>] <url>
 
 htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-w|--writesig <signature file>] <url>
 
@@ -62,12 +62,14 @@ my $help = 0;
 my $result;
 my $writesig;
 my $matchsigs = "sigs";
+my $overlaydir;
 
 # blandest possible but still plausible useragent
 my $bland_useragent = 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)' ;
 
 $result = GetOptions (	'writesig|w=s' => \$writesig,
 			'matchsigs|m=s'=> \$matchsigs,
+			'overlays|O=s' => \$overlaydir,
 			'verbose|v'    => \$verbose,
 			'version|V'    => \$version,
 			'timeout=i'    => \$resptimeout,
@@ -93,6 +95,7 @@ my %testresults;
 my $tmpresult;
 
 my %matchresults;
+my %overlays;
 
 my $OK_CHARS='-a-zA-Z0-9_./';
 if ($writesig)
@@ -125,6 +128,23 @@ if ($matchsigs)
   }
 }
 
+if ($overlaydir)
+{
+  if ($overlaydir =~ m|[^$OK_CHARS]|)
+  {
+    warn ("Unacceptable characters in -O dirname, ignoring option\n");
+    undef $overlaydir;
+  } else {
+    $overlaydir =~ /(.*)/;
+    $overlaydir = $1;
+  }
+  if (! (-e $overlaydir and -d $overlaydir and -r $overlaydir) )
+  {
+    warn ("Overlay directory '$overlaydir' not readable, ignoring -O option\n");
+    undef $overlaydir;
+  }
+}
+
 # XXX: actually, no https yet.
 unless ($scheme eq "http" or $scheme eq "https") { die "only supports http and https URI schemes, for now.\n" ; }
 
@@ -143,6 +163,23 @@ if ($matchsigs)
     delete $matchresults{ basename $signame } if ($@);
   }
   if ($verbose) { print keys (%matchresults) . " signatures loaded.\n" ; }
+}
+
+# load overlay signatures
+if ($overlaydir)
+{
+  my @overlayfiles = <$overlaydir/*.sig> ;
+  OVER: foreach my $overlayname (@overlayfiles)
+  {
+    open OVERLAY, "<" . $overlayname or next OVER;
+    my $over = join '', <OVERLAY> ;
+    close OVERLAY ;
+    $overlays{ basename $overlayname } = eval { decode_json($over); };
+    warn ("Error parsing overlay \"$overlayname\", skipped\n") if ($@);
+    warn ($@) if ($@);
+    delete $overlays{ basename $overlayname } if ($@);
+  }
+  if ($verbose) { print keys (%overlays) . " overlays loaded.\n" ; }
 }
 
 print "actively fingerprinting...\n" if ($verbose) ;
@@ -201,6 +238,53 @@ if ($matchsigs)
   my $matches = 0;
   my %matchscores;
   my $perfectscore = 100 * keys %testresults ; 
+
+  my %overlayscores;
+  my %overlaymaxes;
+
+  if ($overlaydir)
+  {
+    print "doing overlay matching...\n" if ($debug) ;
+
+    OVERLAY: foreach my $overlaytomatch (keys %overlays)
+    {
+      my $overlay = $overlays{$overlaytomatch};
+      if (defined ($overlay->{'fixed_responses'}))
+      {
+        my $fixed = $overlay->{'fixed_responses'};
+        $overlaymaxes{$overlaytomatch} = 100 * scalar keys %$fixed;
+        foreach my $sigpart (keys %$fixed)
+        {
+          my $sig1 = deref_sig ($sigpart, \%testresults);
+          my $sig2 = $fixed->{$sigpart};
+          if (($sig2 eq "delete") and (keys (%$sig1) > 0))
+          {
+            print "$sigpart found with $sigpart == delete, negative match for $overlaytomatch\n" if ($debug and $debug >= 2);
+            next OVERLAY;
+          }
+          elsif ($sig2 eq "delete")
+          {
+            $overlayscores{$overlaytomatch} += 100;
+            next;
+          }
+          my $score = compare_sigs ($sig1, $sig2);
+          $overlayscores{$overlaytomatch} += $score;
+        }
+      }
+      if ($overlayscores{$overlaytomatch} == $overlaymaxes{$overlaytomatch})
+      {
+        print "Overlay match, phase 1: $overlaytomatch\n";
+      }
+      # todo:
+      # * matching phase 1.1: check $overlay->{'optional_responses'}
+      # * matching phase 2: check $overlay->{'cleaned_requests'}
+      # if we get past phase 2, the match is good enough to report.
+      # * matching phase 3:
+      # - copy %testresults, delete the keys we've already matched
+      # - copy %matchresults, transform according to $overlay->{'fixed_backend_conditional'} and $overlay->{'modified_responses'}
+      # - run the matching code below on our temporary copies (needs to be factored out to a sub)
+    }
+  }
 
   foreach my $sigtomatch (keys %matchresults)
   {
