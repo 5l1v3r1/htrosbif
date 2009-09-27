@@ -252,7 +252,7 @@ if ($matchsigs)
       if (defined ($overlay->{'fixed_responses'}))
       {
         my $fixed = $overlay->{'fixed_responses'};
-        $overlaymaxes{$overlaytomatch} = 100 * scalar keys %$fixed;
+        $overlaymaxes{$overlaytomatch} += 100 * scalar keys %$fixed;
         foreach my $sigpart (keys %$fixed)
         {
           my $sig1 = deref_sig ($sigpart, \%testresults);
@@ -267,22 +267,58 @@ if ($matchsigs)
             $overlayscores{$overlaytomatch} += 100;
             next;
           }
-          my $score = compare_sigs ($sig1, $sig2);
-          $overlayscores{$overlaytomatch} += $score;
+          $overlayscores{$overlaytomatch} += compare_sigs ($sig1, $sig2);
         }
       }
       if ($overlayscores{$overlaytomatch} == $overlaymaxes{$overlaytomatch})
       {
-        print "Overlay match, phase 1: $overlaytomatch\n";
+        print "Overlay match, phase 1: $overlaytomatch ($overlayscores{$overlaytomatch})\n";
+      }
+      else
+      {
+        next OVERLAY;
       }
       # todo:
       # * matching phase 1.1: check $overlay->{'optional_responses'}
       # * matching phase 2: check $overlay->{'cleaned_requests'}
       # if we get past phase 2, the match is good enough to report.
+
+      if (defined ($overlay->{'cleaned_requests'}))
+      {
+        my $cleaned = $overlay->{'cleaned_requests'};
+        $overlaymaxes{$overlaytomatch} += 100 * scalar keys %$cleaned;
+        foreach my $sigpart (keys %$cleaned)
+        {
+          my $sig1 = deref_sig ($sigpart, \%testresults);
+          my $sig2;
+          if (ref($cleaned->{$sigpart}) eq 'HASH')
+          {
+            print "FIXME: $sigpart: HASH!\n";
+            $overlayscores{$overlaytomatch} += 100;
+            next;
+          }
+          else
+          {
+            $sig2 = deref_sig ($cleaned->{$sigpart}, \%testresults);
+            $overlayscores{$overlaytomatch} += compare_sigs ($sig1, $sig2);
+          }
+        }
+      }
+      if ($overlayscores{$overlaytomatch} == $overlaymaxes{$overlaytomatch})
+      {
+        print "Overlay match, phase 2: $overlaytomatch ($overlayscores{$overlaytomatch})\n";
+      }
+      else
+      {
+        next OVERLAY;
+      }
+
+      # * matching phase 2.5: check $overlay->{'unreliable_requests'}
       # * matching phase 3:
       # - copy %testresults, delete the keys we've already matched
       # - copy %matchresults, transform according to $overlay->{'fixed_backend_conditional'} and $overlay->{'modified_responses'}
       # - run the matching code below on our temporary copies (needs to be factored out to a sub)
+      # * phase 99, in the future: stacked overlays
     }
   }
 
