@@ -639,7 +639,7 @@ sub test_get_11_knowngood()
   if (exists $signature{'does_keepalive'})
   {
     delete $signature{'does_keepalive'};
-    $signature{'http11_ignores_connection_close'} = 1;
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
 
   # the 99.9% case - we don't want this to signal a likeness
@@ -680,7 +680,7 @@ sub test_get_11_headercontinuation_kind()
   if (exists $signature{'does_keepalive'})
   {
     delete $signature{'does_keepalive'};
-    $signature{'http11_ignores_connection_close'} = 1;
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
 
   # irrelevant
@@ -721,7 +721,7 @@ sub test_get_11_headercontinuation()
   if (exists $signature{'does_keepalive'})
   {
     delete $signature{'does_keepalive'};
-    $signature{'http11_ignores_connection_close'} = 1;
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
 
   # irrelevant
@@ -757,7 +757,7 @@ sub test_options_11_star()
   if (exists $signature{'does_keepalive'})
   {
     delete $signature{'does_keepalive'};
-    $signature{'http11_ignores_connection_close'} = 1;
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
   return $sigref;
 }
@@ -789,7 +789,7 @@ sub test_options_11_knowngood()
   if (exists $signature{'does_keepalive'})
   {
     delete $signature{'does_keepalive'};
-    $signature{'http11_ignores_connection_close'} = 1;
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
   return $sigref;
 }
@@ -822,7 +822,7 @@ sub test_get_12_knowngood()
   if (exists $signature{'does_keepalive'})
   {
     delete $signature{'does_keepalive'};
-    $signature{'http11_ignores_connection_close'} = 1;
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
 
   # irrelevant
@@ -859,7 +859,7 @@ sub test_doesnotexist_11_knowngood()
   if (exists $signature{'does_keepalive'})
   {
     delete $signature{'does_keepalive'};
-    $signature{'http11_ignores_connection_close'} = 1;
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
 
   # irrelevant
@@ -896,7 +896,7 @@ sub test_hairy_method_11_knowngood()
   if (exists $signature{'does_keepalive'})
   {
     delete $signature{'does_keepalive'};
-    $signature{'http11_ignores_connection_close'} = 1;
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
 
   # irrelevant
@@ -1074,6 +1074,9 @@ sub classify_signature()
   }
   @lines = @linestmp ;
 
+  my $tmp_conn_keep_alive = undef;
+  my $tmp_keep_alive = undef;
+
   # analysis
   LINE: foreach my $line (@lines)
   {
@@ -1175,14 +1178,33 @@ sub classify_signature()
           $signature{'accept_ranges'} = $hcontent ;
         }
       }
+      if ($hname =~ m|^Connection$|i)
+      {
+        if ($hcontent =~ m|keep-alive|i)
+        {
+          $tmp_conn_keep_alive = 1;
+        }
+      }
+      if ($hname =~ m|^Keep-Alive$|i)
+      {
+        $tmp_keep_alive = 1;
+      }
     }
+  }
+  if ($tmp_keep_alive and ! defined ($tmp_conn_keep_alive))
+  {
+    $signature{'keepalive_header_without_conntoken'} = 1;
+  }
+  if ($tmp_keep_alive and $tmp_conn_keep_alive)
+  {
+    $signature{'forced_keepalive'} = 1;
   }
 
   # list header order
   #  ignore X-* headers, Set-Cookie, SLASH-LOG-DATA, Content-Disposition, Content-Language
   #  ignore Age, Via ... should be stripped off by outermost reverse proxy anyway
   if (@headers) {
-    $signature{'header_order'} = join(',', grep { (!/^X-.*/i and !/^Set-Cookie/i and !/^SLASH-LOG-DATA/i and !/^Content-Disposition/i and !/^Content-Language/i and !/^P3P/i and !/^Age/i and !/^Via/i)} @headers) ;
+    $signature{'header_order'} = join(',', grep { (!/^X-.*/i and !/^Set-Cookie/i and !/^SLASH-LOG-DATA/i and !/^Content-Disposition/i and !/^Content-Language/i and !/^P3P/i and !/^Age/i and !/^Via/i and !/^Keep-Alive/i)} @headers) ;
   }
 
   # overeager 100 Continue quirk
