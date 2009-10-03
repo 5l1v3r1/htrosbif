@@ -237,10 +237,11 @@ if ($matchsigs)
 
   my %matchscores;
   my %maxscores;
-  my $perfectscore = 100 * keys %testresults ; 
 
   my %overlayscores;
   my %overlaymaxes;
+
+  match_sigtree(\%testresults, \%matchresults, \%matchscores, \%maxscores);
 
   if ($overlaydir)
   {
@@ -282,7 +283,7 @@ if ($matchsigs)
       # TODO: matching phase 1.1: check $overlay->{'optional_responses'}
 
       # matching phase 2: check $overlay->{'cleaned_requests'}
-      # if we get past phase 2, the match is good enough to report.
+      # if we get past phase 2, the match is good enough to pursue further.
 
       if (defined ($overlay->{'cleaned_requests'}))
       {
@@ -321,7 +322,7 @@ if ($matchsigs)
         next OVERLAY;
       }
 
-      # * matching phase 2.5: check $overlay->{'unreliable_requests'}
+      # FIXME: matching phase 2.5: check $overlay->{'unreliable_requests'} (?)
       # * matching phase 3:
       # - copy %testresults, delete the keys we've already matched
       # - copy %matchresults, transform according to $overlay->{'fixed_backend_conditional'} and $overlay->{'modified_responses'}
@@ -330,38 +331,6 @@ if ($matchsigs)
     }
   }
 
-  foreach my $sigtomatch (keys %matchresults)
-  {
-    if ( eq_deeply(\%testresults, $matchresults{$sigtomatch}) )
-    {
-      $matchscores{$sigtomatch} = $perfectscore;
-      $maxscores{$sigtomatch} = $perfectscore;
-      delete $matchresults{$sigtomatch};
-    }
-  }
-  foreach my $sigtomatch (keys %matchresults)
-  {
-    print "fuzzy matching: comparing to $sigtomatch\n" if ($debug);
-    foreach my $sigpart (keys %testresults)
-    {
-      my $sig1 = deref_sig ($sigpart, \%testresults);
-      my $sig2 = deref_sig ($sigpart, $matchresults{$sigtomatch});
-
-      if ( eq_deeply($sig1, $sig2))
-      {
-        print "fuzzy matching: perfect match on $sigpart, 100 points\n" if ($debug);
-        $matchscores{$sigtomatch} += 100;
-      }
-      else
-      {
-        my $score = compare_sigs ($sig1, $sig2);
-        print "fuzzy matching: partial match on $sigpart, $score points\n" if ($score > 0 and $debug);
-        if ($score > 0) { $matchscores{$sigtomatch} += $score; }
-      }
-    }
-    $maxscores{$sigtomatch} = $perfectscore if ($matchscores{$sigtomatch} > 0);
-    print "fuzzy matching: total score $matchscores{$sigtomatch}\n" if ($matchscores{$sigtomatch} > 0 and $debug);
-  }
   foreach my $match (sort { $matchscores{$b}/$maxscores{$b} <=> $matchscores{$a}/$maxscores{$b} } keys %matchscores)
   {
     print "Match ($matchscores{$match}/$maxscores{$match}): $match\n";
@@ -422,6 +391,54 @@ sub deref_sig
 
 ## signature matching helpers
 ######################################
+
+sub match_sigtree
+{
+  my $testref = $_[0];
+  my %testresults = %$testref;
+  my $matchref = $_[1];
+  my %matchresults = %$matchref;
+  my $matchscoreref = $_[2];
+  my $maxscoreref = $_[3];
+  my $ol_addscore = $_[4]; unless (defined $ol_addscore) { $ol_addscore = 0; }
+  my $ol_prefix = $_[5]; unless (defined $ol_prefix) { $ol_prefix = ""; }
+
+  foreach my $sigtomatch (keys %matchresults)
+  {
+    if ( eq_deeply(\%testresults, $matchresults{$sigtomatch}) )
+    {
+      $matchscoreref->{$ol_prefix . $sigtomatch} = (100 * keys %testresults) + $ol_addscore;
+      $maxscoreref->{$ol_prefix . $sigtomatch} = (100 * keys %testresults) + $ol_addscore;
+      delete $matchresults{$sigtomatch};
+    }
+  }
+  foreach my $sigtomatch (keys %matchresults)
+  {
+    print "fuzzy matching: comparing to $sigtomatch\n" if ($debug);
+    foreach my $sigpart (keys %testresults)
+    {
+      my $sig1 = deref_sig ($sigpart, \%testresults);
+      my $sig2 = deref_sig ($sigpart, $matchresults{$sigtomatch});
+
+      if ( eq_deeply($sig1, $sig2))
+      {
+        print "fuzzy matching: perfect match on $sigpart, 100 points\n" if ($debug);
+        $matchscoreref->{$ol_prefix . $sigtomatch} += 100;
+      }
+      else
+      {
+        my $score = compare_sigs ($sig1, $sig2);
+        print "fuzzy matching: partial match on $sigpart, $score points\n" if ($score > 0 and $debug);
+        if ($score > 0) { $matchscoreref->{$ol_prefix . $sigtomatch} += $score; }
+      }
+    }
+    $maxscoreref->{$ol_prefix . $sigtomatch} = 100 * keys %testresults if ($matchscoreref->{$ol_prefix . $sigtomatch} > 0);
+    print "fuzzy matching: total score " . $matchscoreref->{$ol_prefix . $sigtomatch} . "\n" if ($matchscoreref->{$ol_prefix . $sigtomatch} > 0 and $debug);
+
+    $maxscoreref->{$ol_prefix . $sigtomatch} += $ol_addscore if ($matchscoreref->{$ol_prefix . $sigtomatch} > 0);
+    $matchscoreref->{$ol_prefix . $sigtomatch} += $ol_addscore if ($matchscoreref->{$ol_prefix . $sigtomatch} > 0);
+  }
+}
 
 sub compare_sigs
 {
