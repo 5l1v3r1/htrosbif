@@ -248,6 +248,7 @@ if ($matchsigs)
 
     OVERLAY: foreach my $overlaytomatch (keys %overlays)
     {
+      # matching phase 1: check overlay->{'fixed_responses'}
       my $overlay = $overlays{$overlaytomatch};
       if (defined ($overlay->{'fixed_responses'}))
       {
@@ -278,9 +279,9 @@ if ($matchsigs)
       {
         next OVERLAY;
       }
-      # todo:
-      # * matching phase 1.1: check $overlay->{'optional_responses'}
-      # * matching phase 2: check $overlay->{'cleaned_requests'}
+      # TODO: matching phase 1.1: check $overlay->{'optional_responses'}
+
+      # matching phase 2: check $overlay->{'cleaned_requests'}
       # if we get past phase 2, the match is good enough to report.
 
       if (defined ($overlay->{'cleaned_requests'}))
@@ -293,9 +294,16 @@ if ($matchsigs)
           my $sig2;
           if (ref($cleaned->{$sigpart}) eq 'HASH')
           {
-            print "FIXME: $sigpart: HASH!\n";
-            $overlayscores{$overlaytomatch} += 100;
-            next;
+            # merge and compare
+            $sig2 = deref_sig ($cleaned->{$sigpart}->{'like'}, \%testresults);
+            my $likehash = $cleaned->{$sigpart};
+            my %sig3 = %$sig2 ;
+            foreach my $key (keys %$likehash)
+            {
+              next if ($key eq "like");
+              $sig3{$key} = $likehash->{$key};
+            }
+            $overlayscores{$overlaytomatch} += compare_sigs ($sig1, \%sig3);
           }
           else
           {
