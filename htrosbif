@@ -235,8 +235,8 @@ if ($matchsigs)
 {
   print "doing signature matching...\n" if ($verbose) ;
 
-  my $matches = 0;
   my %matchscores;
+  my %maxscores;
   my $perfectscore = 100 * keys %testresults ; 
 
   my %overlayscores;
@@ -334,8 +334,8 @@ if ($matchsigs)
   {
     if ( eq_deeply(\%testresults, $matchresults{$sigtomatch}) )
     {
-      $matches++ ;
-      print "Perfect match ($perfectscore): $sigtomatch\n";
+      $matchscores{$sigtomatch} = $perfectscore;
+      $maxscores{$sigtomatch} = $perfectscore;
       delete $matchresults{$sigtomatch};
     }
   }
@@ -359,11 +359,12 @@ if ($matchsigs)
         if ($score > 0) { $matchscores{$sigtomatch} += $score; }
       }
     }
+    $maxscores{$sigtomatch} = $perfectscore if ($matchscores{$sigtomatch} > 0);
     print "fuzzy matching: total score $matchscores{$sigtomatch}\n" if ($matchscores{$sigtomatch} > 0 and $debug);
   }
-  foreach my $match (sort { $matchscores{$b} <=> $matchscores{$a} } keys %matchscores)
+  foreach my $match (sort { $matchscores{$b}/$maxscores{$b} <=> $matchscores{$a}/$maxscores{$b} } keys %matchscores)
   {
-    print "Fuzzy match ($matchscores{$match}/$perfectscore): $match\n";
+    print "Match ($matchscores{$match}/$maxscores{$match}): $match\n";
   }
 }
 
