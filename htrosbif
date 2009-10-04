@@ -358,15 +358,16 @@ if ($matchsigs)
 
       # matching phase 2.5: check $overlay->{'unreliable_requests'}
       # definition: requests that may be satisfied from cache, or pass through and trigger a native response, semi-randomly
-      if (defined ($overlay->{'unreliable_responses'}))
+      if (defined ($overlay->{'unreliable_requests'}))
       {
-        my $unreliable = $overlay->{'unreliable_responses'};
+        my $unreliable = $overlay->{'unreliable_requests'};
         foreach my $sigpart (keys %$unreliable)
         {
           my $sig1 = deref_sig ($sigpart, \%testresults);
           my $sig2 = deref_sig ($unreliable->{$sigpart}, \%testresults);
-          if ( eq_deeply($sig1, $sig2) )
+          if ( eq_deeply ($sig1, $sig2) )
           {
+            print "Unreliable request - hit $sigpart\n" if $debug and $debug >= 2;
             push @opaquetests, $sigpart;
             $overlayscores{$overlaytomatch} += 100;
             $overlaymaxes{$overlaytomatch} += 100;
@@ -379,12 +380,47 @@ if ($matchsigs)
       my %visibletest = %testresults ;
       foreach my $key (@opaquetests)
       {
-        delete $visibletest{$key};
+        del_testresult ($key, \%visibletest);
       }
 
       # - copy %matchresults, transform according to $overlay->{'fixed_backend_conditional'} and $overlay->{'modified_responses'}
       my %visiblematch = %matchresults ;
 
+      if (defined ($overlay->{'fixed_backend_conditional'}))
+      {
+        my $backendcondarr = $overlay->{'fixed_backend_conditional'};
+        foreach my $backendcond (@$backendcondarr)
+        {
+          my $condition           = $backendcond->{'condition'};
+          my $replacementresponse = $backendcond->{'response'};
+          my $optionalresponse    = $backendcond->{'response_optional'};
+          # XXX Hack - redo when we need >1 condition
+          my ($condkey,) = keys %$condition;
+          my $condval = $condition->{$condkey};
+
+          foreach my $matchresult (keys %visiblematch)
+          {
+            my $visiblesig = $visiblematch{$matchresult};
+            foreach my $sigpart (keys %$visiblesig)
+            {
+              my $tempsig = $visiblesig->{$sigpart};
+              if ($tempsig->{$condkey} and $tempsig->{$condkey} eq $condval)
+              {
+                $visiblesig->{$sigpart} = $replacementresponse;
+                # add response_optional bit, if it looks convenient
+                if (compare_sigs( deref_sig ($sigpart, \%visibletest), $optionalresponse) > 0)
+                {
+                  $tempsig = $visiblesig->{$sigpart};
+                  foreach my $key (keys %$optionalresponse)
+                  {
+                    $tempsig->{$key} = $optionalresponse->{$key};
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       # - run the matching code on our temporary copies
       match_sigtree(\%visibletest, \%visiblematch, \%matchscores, \%maxscores, $overlayscores{$overlaytomatch}, $overlaytomatch);
 
@@ -433,6 +469,22 @@ sub add_testresult
     }
   }
   $testresults{$sigkeyname} = $signature ;
+}
+
+sub del_testresult
+{
+  my $sigkeyname = $_[0];
+  my $testresref = $_[1];
+
+  # explode identical_to references to us
+  TESTRES: foreach (sort keys %$testresref) {
+    my $tmphashref = $testresref->{$_} ;
+    if ( exists $tmphashref->{'identical_to'} and $tmphashref->{'identical_to'} eq $sigkeyname )
+    {
+      $testresref->{$_} = $testresref->{$sigkeyname};
+    }
+  }
+  delete $testresref->{$sigkeyname};
 }
 
 sub deref_sig
