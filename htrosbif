@@ -264,23 +264,17 @@ if ($matchsigs)
           if (($sig2 eq "delete") and (keys (%$sig1) > 0))
           {
             print "$sigpart found with $sigpart == delete, negative match for $overlaytomatch\n" if ($debug and $debug >= 2);
-            next OVERLAY;
+            $overlayscores{$overlaytomatch} -= 100;
+            $overlaymaxes{$overlaytomatch} -= 100;
+            next;
           }
           elsif ($sig2 eq "delete")
           {
-            $overlayscores{$overlaytomatch} += 100;
+            $overlaymaxes{$overlaytomatch} -= 100;
             next;
           }
           $overlayscores{$overlaytomatch} += compare_sigs ($sig1, $sig2);
         }
-      }
-      if ($overlayscores{$overlaytomatch} == $overlaymaxes{$overlaytomatch})
-      {
-        print "Overlay match, phase 1: $overlaytomatch ($overlayscores{$overlaytomatch})\n";
-      }
-      else
-      {
-        next OVERLAY;
       }
 
       # matching phase 1.1: check $overlay->{'optional_responses'}
@@ -312,7 +306,6 @@ if ($matchsigs)
             push @opaquetests, $sigpart;
           }
         }
-        print "Overlay match, phase 1.1: $overlaytomatch ($overlayscores{$overlaytomatch})\n";
       }
 
       # matching phase 2: check $overlay->{'cleaned_requests'}
@@ -347,9 +340,9 @@ if ($matchsigs)
           }
         }
       }
-      if ($overlayscores{$overlaytomatch} == $overlaymaxes{$overlaytomatch})
+      if ($overlayscores{$overlaytomatch} >= ( $overlaymaxes{$overlaytomatch} * 0.90 ) )
       {
-        print "Overlay match, phase 2: $overlaytomatch ($overlayscores{$overlaytomatch})\n";
+        print "Overlay match, phase 2, 90%: $overlaytomatch ($overlayscores{$overlaytomatch})\n" if $verbose;
       }
       else
       {
@@ -422,13 +415,13 @@ if ($matchsigs)
         }
       }
       # - run the matching code on our temporary copies
-      match_sigtree(\%visibletest, \%visiblematch, \%matchscores, \%maxscores, $overlayscores{$overlaytomatch}, $overlaytomatch);
+      match_sigtree(\%visibletest, \%visiblematch, \%matchscores, \%maxscores, $overlayscores{$overlaytomatch}, $overlaymaxes{$overlaytomatch}, $overlaytomatch);
 
       # * phase 99, in the future: stacked overlays
     }
   }
 
-  foreach my $match (sort { $matchscores{$b}/$maxscores{$b} <=> $matchscores{$a}/$maxscores{$b} } keys %matchscores)
+  foreach my $match (sort { ($matchscores{$b}/$maxscores{$b}) <=> ($matchscores{$a}/$maxscores{$a}) } keys %matchscores)
   {
     print "Match ($matchscores{$match}/$maxscores{$match}): $match\n";
   }
@@ -514,7 +507,8 @@ sub match_sigtree
   my $matchscoreref = $_[2];
   my $maxscoreref = $_[3];
   my $ol_addscore = $_[4]; unless (defined $ol_addscore) { $ol_addscore = 0; }
-  my $ol_prefix = $_[5];
+  my $ol_addmax = $_[5]; unless (defined $ol_addmax) { $ol_addmax = 0; }
+  my $ol_prefix = $_[6];
   if (defined $ol_prefix) { $ol_prefix = $ol_prefix . ' => ' ; }
   else { $ol_prefix = ""; }
 
@@ -523,7 +517,7 @@ sub match_sigtree
     if ( eq_deeply(\%testresults, $matchresults{$sigtomatch}) )
     {
       $matchscoreref->{$ol_prefix . $sigtomatch} = (100 * keys %testresults) + $ol_addscore;
-      $maxscoreref->{$ol_prefix . $sigtomatch} = (100 * keys %testresults) + $ol_addscore;
+      $maxscoreref->{$ol_prefix . $sigtomatch} = (100 * keys %testresults) + $ol_addmax;
       delete $matchresults{$sigtomatch};
     }
   }
@@ -550,7 +544,7 @@ sub match_sigtree
     $maxscoreref->{$ol_prefix . $sigtomatch} = 100 * keys %testresults if ($matchscoreref->{$ol_prefix . $sigtomatch} > 0);
     print "fuzzy matching: total score " . $matchscoreref->{$ol_prefix . $sigtomatch} . "\n" if ($matchscoreref->{$ol_prefix . $sigtomatch} > 0 and $debug);
 
-    $maxscoreref->{$ol_prefix . $sigtomatch} += $ol_addscore if ($matchscoreref->{$ol_prefix . $sigtomatch} > 0);
+    $maxscoreref->{$ol_prefix . $sigtomatch} += $ol_addmax if ($matchscoreref->{$ol_prefix . $sigtomatch} > 0);
     $matchscoreref->{$ol_prefix . $sigtomatch} += $ol_addscore if ($matchscoreref->{$ol_prefix . $sigtomatch} > 0);
   }
 }
