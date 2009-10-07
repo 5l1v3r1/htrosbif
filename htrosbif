@@ -992,7 +992,7 @@ sub helper_talk
   if ($nfound)
   {
     # $amountread = undef means connection closed during the select, or similar.
-    while ($nfound and $amountread = read $sock, $blarg, 5000000)
+    while ($nfound and $amountread = sysread $sock, $blarg, 5000000)
     {
       push @data, $blarg;
       vec($rin,fileno($sock),1) = 1;
