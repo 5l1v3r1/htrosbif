@@ -986,7 +986,7 @@ sub helper_talk
   # slow reply? timeout, perhaps?
   if ($nfound and ($timeleft < ($mediumtimeout / 2)))
   {
-    $sigref->{'delayed_reply'} = floor($mediumtimeout - $timeleft);
+    $sigref->{'delayed_reply'} = 1;
   }
 
   if ($nfound)
