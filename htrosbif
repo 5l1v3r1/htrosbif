@@ -1050,6 +1050,7 @@ sub classify_signature()
   my @linestmp;
   my $restisbody = 0;
   my @body;
+  my $hundredcontinue = 0;
   LINEPRE: foreach my $line (@lines)
   {
     my $tmp = $/ ;
@@ -1064,7 +1065,17 @@ sub classify_signature()
       next;
     }
 
-    if ($#linestmp > 0 and $line =~ /^$/)
+    if ($line =~ m|^[Hh][Tt][Tt][Pp]/\d\.\d 100|)
+    {
+      # a 100 continue... optionally skip one crlfcrlf
+      $hundredcontinue++;
+    }
+    elsif ($line =~ m|^[Hh][Tt][Tt][Pp]/\d\.\d| and $hundredcontinue > 0)
+    {
+      $hundredcontinue--;
+    }
+
+    if ($#linestmp > 0 and $line =~ /^$/ and not $hundredcontinue--)
     {
       $restisbody = 1; # crlfcrlf - end of headers
       next LINEPRE;
@@ -1088,10 +1099,8 @@ sub classify_signature()
   {
     $linenum++;
 
-    # check for overeager 100 Continue ... sent after seeing the request line and before seeing the headers.
-    # Jetty 2.4 does this. It then reads the headers, and follows up sending a full response.
-    # A quite strange interpretation of RFC2068.
-    if ($line =~ m|^([Hh][Tt][Tt][Pp])/(1\.1) 100| and not exists $signature{'http'} and not exists $signature{'temp_http'})
+    # 100 Continue?
+    if ($line =~ m|^([Hh][Tt][Tt][Pp])/(\d\.\d) 100| and not exists $signature{'http'} and not exists $signature{'temp_http'})
     {
       $signature{'temp_http'} = $1;
       $signature{'temp_http_version'} = $2;
@@ -1100,8 +1109,6 @@ sub classify_signature()
       {
         $signature{'temp_response_code'} = $2;
         $signature{'temp_response_text'} = $4;
-        unless ($1 eq " ") { $signature{'temp_quirk_http_to_responsecode_whitespace'} = $1; }
-        unless ($3 eq " ") { $signature{'temp_quirk_responsecode_to_responsetext_whitespace'} = $3; }
       }
       next LINE;
     }
@@ -1150,8 +1157,8 @@ sub classify_signature()
       next LINE;
     }
 
-    # read headers
-    if ($line =~ /^(\S+)( ?):( ?)(.*)/)
+    # read headers, ignore 100 continue headers
+    if ($line =~ /^([^\s<>]+)( ?):( ?)(.*)/ and exists $signature{'http'})
     {
       my $hname = $1 ;
       my $hcontent = $4 ;
@@ -1213,33 +1220,27 @@ sub classify_signature()
     $signature{'header_order'} = join(',', grep { (!/^X-.*/i and !/^Set-Cookie/i and !/^SLASH-LOG-DATA/i and !/^Content-Disposition/i and !/^Content-Language/i and !/^P3P/i and !/^Age/i and !/^Via/i and !/^Keep-Alive/i)} @headers) ;
   }
 
-  # overeager 100 Continue quirk
+  # superfluous 100 Continue quirk - none of our tests have any real business getting a 100 Continue back
   if (exists $signature{'temp_http_version'} and exists $signature{'http_version'})
   {
-    $signature{'overeager_100_continue'} = 1;
+    $signature{'superfluous_100_continue'} = 1;
     delete $signature{'temp_http'};
     delete $signature{'temp_http_version'};
     delete $signature{'temp_response_code'};
     delete $signature{'temp_response_text'};
-    delete $signature{'temp_quirk_http_to_responsecode_whitespace'};
-    delete $signature{'temp_quirk_responsecode_to_responsetext_whitespace'};
   }
 
-  # did we really get just a 100 Continue? All right.
+  # Did we really get just a 100 Continue? All right.
+  # Varnish may get confused if it receives an unsolicited 100 Continue, and serve
+  # a content-free 100 Continue to clients.
   if (exists $signature{'temp_http_version'} and not exists $signature{'http_version'})
   {
-    $signature{'http'}             = $signature{'temp_http'};          delete $signature{'temp_http'};
-    $signature{'http_version'}     = $signature{'temp_http_version'};  delete $signature{'temp_http_version'};
-    $signature{'response_code'}    = $signature{'temp_response_code'}; delete $signature{'temp_response_code'};
-    $signature{'response_text'}    = $signature{'temp_response_text'}; delete $signature{'temp_response_text'};
-    if ( exists $signature{'temp_quirk_http_to_responsecode_whitespace'} )
-    {
-      $signature{'quirk_http_to_responsecode_whitespace'} = $signature{'temp_quirk_http_to_responsecode_whitespace'}; delete $signature{'temp_quirk_http_to_responsecode_whitespace'};
-    }
-    if ( exists $signature{'temp_quirk_responsecode_to_responsetext_whitespace'} )
-    {
-      $signature{'quirk_responsecode_to_responsetext_whitespace'} = $signature{'temp_quirk_responsecode_to_responsetext_whitespace'}; delete $signature{'temp_quirk_responsecode_to_responsetext_whitespace'};
-    }
+    $signature{'orphan_100_continue'} = 1;
+    $signature{'http_version'} = $signature{'temp_http_version'};
+    delete $signature{'temp_http'};
+    delete $signature{'temp_http_version'};
+    delete $signature{'temp_response_code'};
+    delete $signature{'temp_response_text'};
   }
 
   if (exists $signature{'http'} and $signature{'http'} eq 'HTTP')
