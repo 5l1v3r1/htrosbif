@@ -4,16 +4,21 @@ package htrosbif;
 
 use strict;
 
+require 5.010; # state variables! yay!
+
 use File::Basename;
 use Getopt::Long qw(:config no_ignore_case);
+use IO::Socket;
 use JSON::XS;
 use List::MoreUtils qw(uniq);
 use Pod::Usage;
 use POSIX qw(floor);
+use Socket;
 use Test::Deep::NoTest;
 use URI;
 
 use constant VERSION => "alpha 2 - fuzzy" ;
+use feature qw(state);
 
 =encoding utf8
 
@@ -952,14 +957,15 @@ sub helper_talk
   my $amountread;
   my $sigref = $_[1] ;
  
-  # FIXME: do a gethostbyname and cache the result, so we don't get confused
-  #  by heterogenous DNS round-robin clusters (and yes, we do get quite
-  #  useless results in that case) ... of course, there may be internal
-  #  load balancers doing the roundrobining as well, but let's get simpler
-  #  cases right first.
+  # lookup and cache ip in a state variable
+  # TODO: IPv6 - needs a bit more code, inet_ntop/pton want address family parameters :(
+  state $ip;
+  unless (defined $ip) {
+    $ip = inet_ntoa(inet_aton($host));
+    print "resolved, using \$host = $host, \$ip = $ip\n" if $verbose;
+  }
 
-  use IO::Socket;
-  my $sock = new IO::Socket::INET ( PeerAddr => $host, PeerPort => $port, Proto => 'tcp' );
+  my $sock = new IO::Socket::INET ( PeerAddr => $ip, PeerPort => $port, Proto => 'tcp' );
 
   unless ($sock)
   {
