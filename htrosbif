@@ -1014,7 +1014,7 @@ sub helper_talk
   # connection slow to close?
   if ($nfound and (not defined ($amountread) or $amountread < 1) and ($timeleft < ($mediumtimeout / 2)))
   {
-    $sigref->{'delayed_close'} = floor($mediumtimeout - $timeleft);
+    $sigref->{'delayed_close'} = 1;
   }
 
   close($sock);
