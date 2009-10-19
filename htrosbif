@@ -409,16 +409,17 @@ if ($matchsigs)
                     $tempsig->{$key} = $optionalresponse->{$key};
                   }
                 }
-              }
-            }
-          }
-        }
+              } # if match! transform!
+            } # foreach loop through signature bits
+          } # foreach loop through %visiblematch
+        } # foreach loop through fixed_backend_conditional
       }
       # - run the matching code on our temporary copies
       match_sigtree(\%visibletest, \%visiblematch, \%matchscores, \%maxscores, $overlayscores{$overlaytomatch}, $overlaymaxes{$overlaytomatch}, $overlaytomatch);
 
       # * phase 99, in the future: stacked overlays
-    }
+
+    } # foreach overlay
   }
 
   foreach my $match (sort { ($matchscores{$b}/$maxscores{$b}) <=> ($matchscores{$a}/$maxscores{$a}) } keys %matchscores)
