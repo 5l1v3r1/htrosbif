@@ -40,7 +40,9 @@ htrosbif [-V|--version]
 
 =head1 DESCRIPTION
 
-Does a bit of Recon by Fire, if you will. Prods the web server in all sorts of old, new, basic, fancy, spec-compliant and spec-breaking ways. Tries to characterise both the well-spoken educated responses and the seriously deviant babble it receives in return.
+Does a bit of Recon by Fire, if you will. Prods the web server in all sorts of old, new, basic, fancy, spec-compliant and spec-breaking ways. Tries to characterise both the well-spoken educated responses and the seriously deviant babble it receives in return. Signatures contain no user data, only header names and http-level quirks.
+
+As a useful side effect, might detect reverse proxies, http load balancers, intrusion prevention systems and web application firewalls. Signature generation is mostly manual for these overlays.
 
 =head1 AUTHOR
 
