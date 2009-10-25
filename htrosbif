@@ -84,6 +84,21 @@ my $overlaydir;
 # blandest possible but still plausible useragent
 my $bland_useragent = 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)' ;
 
+## sanitizing helpers
+########################
+
+sub print_sane ($)
+{
+  # in case of evil servers:
+  # sanitize \0, backspace, delete, vt, ff, ansi terminal escapes, etc.
+  # show them as periods, hexdump-style
+  my $unclean = $_[0];
+  $unclean =~ s/[^[:alnum:][:punct:] \t\r\n]/./g ;
+  print $unclean ;
+}
+
+########################
+
 $result = GetOptions (	'writesig|w=s' => \$writesig,
 			'matchsigs|m=s'=> \$matchsigs,
 			'overlays|O=s' => \$overlaydir,
@@ -179,7 +194,7 @@ if ($matchsigs)
     warn ($@) if ($@);
     delete $matchresults{ basename $signame } if ($@);
   }
-  if ($verbose) { print keys (%matchresults) . " signatures loaded.\n" ; }
+  if ($verbose) { print_sane keys (%matchresults) . " signatures loaded.\n" ; }
 }
 
 # load overlay signatures
@@ -196,10 +211,10 @@ if ($overlaydir)
     warn ($@) if ($@);
     delete $overlays{ basename $overlayname } if ($@);
   }
-  if ($verbose) { print keys (%overlays) . " overlays loaded.\n" ; }
+  if ($verbose) { print_sane keys (%overlays) . " overlays loaded.\n" ; }
 }
 
-print "actively fingerprinting...\n" if ($verbose) ;
+print_sane "actively fingerprinting...\n" if ($verbose) ;
 
 # is_namevhost();
 
@@ -235,22 +250,22 @@ add_testresult('doesnotexist_11_knowngood', $tmpresult );
 
 # dump results
 if ($verbose and %testresults) {
-  print "\n";
-  print "test results:\n" ;
+  print_sane "\n";
+  print_sane "test results:\n" ;
   foreach (sort keys %testresults) {
-    print "$_:\n\n";
+    print_sane "$_:\n\n";
     my $tmphashref = $testresults{$_} ;
     foreach my $sigkey (sort keys %$tmphashref) {
-       print " $sigkey: $tmphashref->{ $sigkey }\n";
+       print_sane " $sigkey: $tmphashref->{ $sigkey }\n";
     }
-  print "\n";
+  print_sane "\n";
   }
 }
 
 # signature matching
 if ($matchsigs)
 {
-  print "doing signature matching...\n" if ($verbose) ;
+  print_sane "doing signature matching...\n" if ($verbose) ;
 
   my %matchscores;
   my %maxscores;
@@ -262,7 +277,7 @@ if ($matchsigs)
 
   if ($overlaydir)
   {
-    print "doing overlay matching...\n" if ($debug) ;
+    print_sane "doing overlay matching...\n" if ($debug) ;
 
     OVERLAY: foreach my $overlaytomatch (keys %overlays)
     {
@@ -280,7 +295,7 @@ if ($matchsigs)
           my $sig2 = $fixed->{$sigpart};
           if (($sig2 eq "delete") and (keys (%$sig1) > 0))
           {
-            print "$sigpart found with $sigpart == delete, negative match for $overlaytomatch\n" if ($debug and $debug >= 2);
+            print_sane "$sigpart found with $sigpart == delete, negative match for $overlaytomatch\n" if ($debug and $debug >= 2);
             $overlayscores{$overlaytomatch} -= 100;
             $overlaymaxes{$overlaytomatch} -= 100;
             next;
@@ -305,7 +320,7 @@ if ($matchsigs)
           my $sig2 = $optional->{$sigpart};
           if (($sig2 eq "delete") and (keys (%$sig1) > 0))
           {
-            print "$sigpart found with $sigpart == delete, negative optional match for $overlaytomatch\n" if ($debug and $debug >= 2);
+            print_sane "$sigpart found with $sigpart == delete, negative optional match for $overlaytomatch\n" if ($debug and $debug >= 2);
             next;
           }
           elsif ($sig2 eq "delete")
@@ -359,7 +374,7 @@ if ($matchsigs)
       }
       if ($overlayscores{$overlaytomatch} >= ( $overlaymaxes{$overlaytomatch} * 0.90 ) )
       {
-        print "Overlay match, phase 2, 90%: $overlaytomatch ($overlayscores{$overlaytomatch})\n" if $verbose;
+        print_sane "Overlay match, phase 2, 90%: $overlaytomatch ($overlayscores{$overlaytomatch})\n" if $verbose;
       }
       else
       {
@@ -377,7 +392,7 @@ if ($matchsigs)
           my $sig2 = deref_sig ($unreliable->{$sigpart}, \%testresults);
           if ( eq_deeply ($sig1, $sig2) )
           {
-            print "Unreliable request - hit $sigpart\n" if $debug and $debug >= 2;
+            print_sane "Unreliable request - hit $sigpart\n" if $debug and $debug >= 2;
             push @opaquetests, $sigpart;
             $overlayscores{$overlaytomatch} += 100;
             $overlaymaxes{$overlaytomatch} += 100;
@@ -441,7 +456,7 @@ if ($matchsigs)
 
   foreach my $match (sort { ($matchscores{$b}/$maxscores{$b}) <=> ($matchscores{$a}/$maxscores{$a}) } keys %matchscores)
   {
-    print "Match ($matchscores{$match}/$maxscores{$match}): $match\n";
+    print_sane "Match ($matchscores{$match}/$maxscores{$match}): $match\n";
   }
 }
 
@@ -541,7 +556,7 @@ sub match_sigtree
   }
   foreach my $sigtomatch (keys %matchresults)
   {
-    print "fuzzy matching: comparing to $sigtomatch\n" if ($debug);
+    print_sane "fuzzy matching: comparing to $sigtomatch\n" if ($debug);
     foreach my $sigpart (keys %testresults)
     {
       my $sig1 = deref_sig ($sigpart, \%testresults);
@@ -549,18 +564,18 @@ sub match_sigtree
 
       if ( eq_deeply($sig1, $sig2))
       {
-        print "fuzzy matching: perfect match on $sigpart, 100 points\n" if ($debug);
+        print_sane "fuzzy matching: perfect match on $sigpart, 100 points\n" if ($debug);
         $matchscoreref->{$ol_prefix . $sigtomatch} += 100;
       }
       else
       {
         my $score = compare_sigs ($sig1, $sig2);
-        print "fuzzy matching: partial match on $sigpart, $score points\n" if ($score > 0 and $debug);
+        print_sane "fuzzy matching: partial match on $sigpart, $score points\n" if ($score > 0 and $debug);
         if ($score > 0) { $matchscoreref->{$ol_prefix . $sigtomatch} += $score; }
       }
     }
     $maxscoreref->{$ol_prefix . $sigtomatch} = 100 * keys %testresults if ($matchscoreref->{$ol_prefix . $sigtomatch} and $matchscoreref->{$ol_prefix . $sigtomatch} > 0);
-    print "fuzzy matching: total score " . $matchscoreref->{$ol_prefix . $sigtomatch} . "\n" if ($matchscoreref->{$ol_prefix . $sigtomatch} and $matchscoreref->{$ol_prefix . $sigtomatch} > 0 and $debug);
+    print_sane "fuzzy matching: total score " . $matchscoreref->{$ol_prefix . $sigtomatch} . "\n" if ($matchscoreref->{$ol_prefix . $sigtomatch} and $matchscoreref->{$ol_prefix . $sigtomatch} > 0 and $debug);
 
     $maxscoreref->{$ol_prefix . $sigtomatch} += $ol_addmax if ($matchscoreref->{$ol_prefix . $sigtomatch} and $matchscoreref->{$ol_prefix . $sigtomatch} > 0);
     $matchscoreref->{$ol_prefix . $sigtomatch} += $ol_addscore if ($matchscoreref->{$ol_prefix . $sigtomatch} and $matchscoreref->{$ol_prefix . $sigtomatch} > 0);
@@ -601,23 +616,23 @@ sub compare_sigs
 	  if ($order1[$x] eq $order2[$y])
           {
             $keymatched = 1;
-#            print "match! $order1[$x] eq $order2[$y]\n";
+#            print_sane "match! $order1[$x] eq $order2[$y]\n";
           }
         }
         if ($keymatched == 0)
         {
-#          print "no match! removing $order1[$x] from " . join (',',@order1) . "\n";
+#          print_sane "no match! removing $order1[$x] from " . join (',',@order1) . "\n";
           splice(@order1, $x, 1); # didn't find header x in sig2, delete from sig1
           $x--;
         }
-#        print '@order1 = ' . join (',',@order1) . "\n";
-#        print '@order2 = ' . join (',',@order2) . "\n";
+#        print_sane '@order1 = ' . join (',',@order1) . "\n";
+#        print_sane '@order2 = ' . join (',',@order2) . "\n";
       }
       # testresult is a ordered superset of the signature
       if (join (',',@order1) eq $sig2->{$key})
       {
         $score+=($matchscore * 3 / 4);
-        print ("$sig1->{$key} superset of $sig2->{$key}\n") if ($debug and $debug >= 2);
+        print_sane ("$sig1->{$key} superset of $sig2->{$key}\n") if ($debug and $debug >= 2);
         next;
       }
 
@@ -630,23 +645,23 @@ sub compare_sigs
 	  if ($order2[$x] eq $order3[$y])
           {
             $keymatched = 1;
-#            print "match! $order2[$x] eq $order3[$y]\n";
+#            print_sane "match! $order2[$x] eq $order3[$y]\n";
           }
         }
         if ($keymatched == 0)
         {
-#          print "no match! removing $order2[$x] from " . join (',',@order2) . "\n";
+#          print_sane "no match! removing $order2[$x] from " . join (',',@order2) . "\n";
           splice(@order2, $x, 1); # didn't find header x in sig1, delete from sig2
           $x--;
         }
-#        print '@order3 = ' . join(',',@order3) . "\n";
-#        print '@order2 = ' . join(',',@order2) . "\n";
+#        print_sane '@order3 = ' . join(',',@order3) . "\n";
+#        print_sane '@order2 = ' . join(',',@order2) . "\n";
       }
       # testresult is a ordered subset of the signature
       if (join (',',@order2) eq $sig1->{$key})
       {
         $score+=($matchscore * 3 / 4);
-        print ("$sig1->{$key} subset of $sig2->{$key}\n") if ($debug and $debug >= 2);;
+        print_sane ("$sig1->{$key} subset of $sig2->{$key}\n") if ($debug and $debug >= 2);;
         next;
       }
 
@@ -654,11 +669,11 @@ sub compare_sigs
       if ( ($#order1+1) > 1 and join (',',@order2) eq join (',',@order1))
       {
         $score+=($matchscore / 2);
-        print ("intersection " . join (',',@order2) . " of $sig1->{$key} and $sig2->{$key} has same order\n") if ($debug and $debug >= 2);;
+        print_sane ("intersection " . join (',',@order2) . " of $sig1->{$key} and $sig2->{$key} has same order\n") if ($debug and $debug >= 2);;
         next;
       }
 
-#      print "$sig1->{$key} and $sig2->{$key} does not match.\n";
+#      print_sane "$sig1->{$key} and $sig2->{$key} does not match.\n";
     }
   }
 
@@ -677,7 +692,7 @@ sub test_get_09_knowngood()
   my $request   = "GET $path\r\n";
   my $request2  = "GET $path\r\n\r\n";
 
-  if ($debug) { print "test_get_09_knowngood() starting\n"; }
+  if ($debug) { print_sane "test_get_09_knowngood() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -697,9 +712,9 @@ sub test_get_09_knowngood()
   unless ($#data == -1)
   {
     if ($debug) {
-      print "test_get_09_knowngood returned data (if any):\n" ;
+      print_sane "test_get_09_knowngood returned data (if any):\n" ;
       foreach (join '',@data) {
-        print "$_\n";
+        print_sane "$_\n";
       }
     }
 
@@ -749,7 +764,7 @@ sub test_get_10_knowngood()
      $request .= "User-Agent: $bland_useragent\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print "test_get_10_knowngood() starting\n"; }
+  if ($debug) { print_sane "test_get_10_knowngood() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -765,9 +780,9 @@ sub test_get_10_knowngood()
   }
 
   if ($debug and @data) {
-    print "test_get_10_knowngood() returned data (if any):\n" ;
+    print_sane "test_get_10_knowngood() returned data (if any):\n" ;
     foreach (join '',@data) {
-      print "$_\n";
+      print_sane "$_\n";
     }
   }
   my $sigref2 = classify_signature(@data);
@@ -781,8 +796,8 @@ sub test_get_10_knowngood()
   if (   (exists $signature{'response_code'} and $signature{'response_code'} != "200")
       or  exists $signature{'connection_refused'} )
   {
-    print STDERR "The web server isn't responding politely to a plain HTTP/1.0 GET request.\n";
-    print STDERR "Signature matching and generation won't work reliably - bailing out.\n";
+    print_sane STDERR "The web server isn't responding politely to a plain HTTP/1.0 GET request.\n";
+    print_sane STDERR "Signature matching and generation won't work reliably - bailing out.\n";
     exit(1);
   }
 
@@ -800,7 +815,7 @@ sub test_get_10_nlonly()
      $request .= "User-Agent: $bland_useragent\n";
      $request .= "\n";
 
-  if ($debug) { print "test_get_10_nlonly() starting\n"; }
+  if ($debug) { print_sane "test_get_10_nlonly() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -821,9 +836,9 @@ sub test_get_10_nlonly()
   }
 
   if ($debug and @data) {
-    print "test_get_10_nlonly() returned data (if any):\n" ;
+    print_sane "test_get_10_nlonly() returned data (if any):\n" ;
     foreach (join '',@data) {
-      print "$_\n";
+      print_sane "$_\n";
     }
   }
   my $sigref2 = classify_signature(@data);
@@ -848,7 +863,7 @@ sub test_get_10_cronly()
      $request .= "User-Agent: $bland_useragent\r";
      $request .= "\r";
 
-  if ($debug) { print "test_get_10_cronly() starting\n"; }
+  if ($debug) { print_sane "test_get_10_cronly() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -869,9 +884,9 @@ sub test_get_10_cronly()
   }
 
   if ($debug and @data) {
-    print "test_get_10_cronly() returned data (if any):\n" ;
+    print_sane "test_get_10_cronly() returned data (if any):\n" ;
     foreach (join '',@data) {
-      print "$_\n";
+      print_sane "$_\n";
     }
   }
   my $sigref2 = classify_signature(@data);
@@ -899,7 +914,7 @@ sub test_get_11_knowngood()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print "test_get_11_knowngood() starting\n"; }
+  if ($debug) { print_sane "test_get_11_knowngood() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -907,9 +922,9 @@ sub test_get_11_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print "test_get_11_knowngood() returned data (if any):\n" ;
+    print_sane "test_get_11_knowngood() returned data (if any):\n" ;
     foreach (join '',@data) {
-      print "$_\n";
+      print_sane "$_\n";
     }
   }
   my $sigref2 = classify_signature(@data);
@@ -940,7 +955,7 @@ sub test_get_11_headercontinuation_kind()
      $request .= "User-Agent:\r\n\t$bland_useragent\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print "test_get_11_headercontinuation_kind() starting\n"; }
+  if ($debug) { print_sane "test_get_11_headercontinuation_kind() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -948,9 +963,9 @@ sub test_get_11_headercontinuation_kind()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print "test_get_11_headercontinuation_kind() returned data (if any):\n" ;
+    print_sane "test_get_11_headercontinuation_kind() returned data (if any):\n" ;
     foreach (join '',@data) {
-      print "$_\n";
+      print_sane "$_\n";
     }
   }
   my $sigref2 = classify_signature(@data);
@@ -981,7 +996,7 @@ sub test_get_11_headercontinuation()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print "test_get_11_headercontinuation() starting\n"; }
+  if ($debug) { print_sane "test_get_11_headercontinuation() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -989,9 +1004,9 @@ sub test_get_11_headercontinuation()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print "test_get_11_headercontinuation() returned data (if any):\n" ;
+    print_sane "test_get_11_headercontinuation() returned data (if any):\n" ;
     foreach (join '',@data) {
-      print "$_\n";
+      print_sane "$_\n";
     }
   }
   my $sigref2 = classify_signature(@data);
@@ -1017,7 +1032,7 @@ sub test_options_11_star()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print "test_options_11_star() starting\n"; }
+  if ($debug) { print_sane "test_options_11_star() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1025,9 +1040,9 @@ sub test_options_11_star()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print "test_options_11_star() returned data (if any):\n" ;
+    print_sane "test_options_11_star() returned data (if any):\n" ;
     foreach (join '',@data) {
-      print "$_\n";
+      print_sane "$_\n";
     }
   }
   my $sigref2 = classify_signature(@data);
@@ -1049,7 +1064,7 @@ sub test_options_11_knowngood()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print "test_options_11_knowngood() starting\n"; }
+  if ($debug) { print_sane "test_options_11_knowngood() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1057,9 +1072,9 @@ sub test_options_11_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print "test_options_11_knowngood() returned data (if any):\n" ;
+    print_sane "test_options_11_knowngood() returned data (if any):\n" ;
     foreach (join '',@data) {
-      print "$_\n";
+      print_sane "$_\n";
     }
   }
   my $sigref2 = classify_signature(@data);
@@ -1082,7 +1097,7 @@ sub test_get_12_knowngood()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print "test_get_12_knowngood() starting\n"; }
+  if ($debug) { print_sane "test_get_12_knowngood() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1090,9 +1105,9 @@ sub test_get_12_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print "test_get_12_knowngood() returned data (if any):\n" ;
+    print_sane "test_get_12_knowngood() returned data (if any):\n" ;
     foreach (join '',@data) {
-      print "$_\n";
+      print_sane "$_\n";
     }
   }
   my $sigref2 = classify_signature(@data);
@@ -1119,7 +1134,7 @@ sub test_doesnotexist_11_knowngood()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print "test_doesnotexist_11_knowngood() starting\n"; }
+  if ($debug) { print_sane "test_doesnotexist_11_knowngood() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1127,9 +1142,9 @@ sub test_doesnotexist_11_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print "test_doesnotexist_11_knowngood() returned data (if any):\n" ;
+    print_sane "test_doesnotexist_11_knowngood() returned data (if any):\n" ;
     foreach (join '',@data) {
-      print "$_\n";
+      print_sane "$_\n";
     }
   }
   my $sigref2 = classify_signature(@data);
@@ -1156,7 +1171,7 @@ sub test_hairy_method_11_knowngood()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print "test_hairy_method_11_knowngood() starting\n"; }
+  if ($debug) { print_sane "test_hairy_method_11_knowngood() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1164,9 +1179,9 @@ sub test_hairy_method_11_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print "test_hairy_method_11_knowngood() returned data (if any):\n" ;
+    print_sane "test_hairy_method_11_knowngood() returned data (if any):\n" ;
     foreach (join '',@data) {
-      print "$_\n";
+      print_sane "$_\n";
     }
   }
   my $sigref2 = classify_signature(@data);
@@ -1192,7 +1207,7 @@ sub test_get_20_knowngood()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print "test_get_20_knowngood() starting\n"; }
+  if ($debug) { print_sane "test_get_20_knowngood() starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1200,9 +1215,9 @@ sub test_get_20_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print "test_get_20_knowngood() returned data (if any):\n" ;
+    print_sane "test_get_20_knowngood() returned data (if any):\n" ;
     foreach (join '',@data) {
-      print "$_\n";
+      print_sane "$_\n";
     }
   }
   my $sigref2 = classify_signature(@data);
@@ -1235,14 +1250,14 @@ sub helper_talk
   state $ip;
   unless (defined $ip) {
     $ip = inet_ntoa(inet_aton($host));
-    print "resolved, using \$host = $host, \$ip = $ip\n" if $verbose;
+    print_sane "resolved, using \$host = $host, \$ip = $ip\n" if $verbose;
   }
 
   my $sock = new IO::Socket::INET ( PeerAddr => $ip, PeerPort => $port, Proto => 'tcp' );
 
   unless ($sock)
   {
-    print STDERR "Could not create socket: $!\n" if $verbose;
+    print_sane STDERR "Could not create socket: $!\n" if $verbose;
     $sigref->{'connection_refused'} = 1;
     return @data;
   }
@@ -1333,7 +1348,7 @@ sub classify_signature()
 
     if (($restisbody == 0) and ($#linestmp > -1) and ($line =~ /^\s+(\S+.+)/))
     {
-      print "classify preprocessing: folding line '$1' into previous '$linestmp[$#linestmp]'\n" if $debug;
+      print_sane "classify preprocessing: folding line '$1' into previous '$linestmp[$#linestmp]'\n" if $debug;
       $linestmp[$#linestmp] = $linestmp[$#linestmp] . $1 ;
       next;
     }
@@ -1397,7 +1412,7 @@ sub classify_signature()
        )
     {
       $signature{'response_body'} = 1;
-      print "shortcircuit: found $1 before any HTTP response\n" if $debug;
+      print_sane "shortcircuit: found $1 before any HTTP response\n" if $debug;
       last LINE;
     }
 
