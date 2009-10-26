@@ -81,7 +81,7 @@ my $help = 0;
 my $result;
 my $writesig;
 my $matchsigs = "sigs";
-my $overlaydir;
+my $overlaydir = "overlays";
 
 # blandest possible but still plausible useragent
 my $bland_useragent = 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)' ;
