@@ -1,0 +1,9 @@
+REQUIREMENTS:
+
+Perl 5.10.0 or higher
+
+Non-core modules:
+ JSON::XS
+ List::MoreUtils
+ Test::Deep
+
