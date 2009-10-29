@@ -24,7 +24,7 @@ use feature qw(state);
 
 =head1 NAME
 
-htrosbif - Active HTTP fingerprinting and recon tool
+htrosbif - Active HTTP server fingerprinting and recon tool
 
 =head1 SYNOPSIS
 
