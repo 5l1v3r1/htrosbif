@@ -476,6 +476,12 @@ if ($matchsigs)
     $numprinted++;
     if ($numprinted eq 10) { last unless $allmatches; }
   }
+
+  if ($numprinted eq 0)
+  {
+    print STDERR "No matches! That's odd...\n" ;
+    exit(1);
+  }
 }
 
 # write signature to file
@@ -814,8 +820,8 @@ sub test_get_10_knowngood()
   if (   (exists $signature{'response_code'} and $signature{'response_code'} != "200")
       or  exists $signature{'connection_refused'} )
   {
-    print_sane STDERR "The web server isn't responding politely to a plain HTTP/1.0 GET request.\n";
-    print_sane STDERR "Signature matching and generation won't work reliably - bailing out.\n";
+    print STDERR "The web server isn't responding politely to a plain HTTP/1.0 GET request.\n";
+    print STDERR "Signature matching and generation won't work reliably - bailing out.\n";
     exit(1);
   }
 
