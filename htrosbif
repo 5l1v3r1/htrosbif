@@ -1506,8 +1506,9 @@ sub classify_signature()
   # list header order
   #  ignore X-* headers, Set-Cookie, SLASH-LOG-DATA, Content-Disposition, Content-Language
   #  ignore Age, Via ... should be stripped off by outermost reverse proxy anyway
+  #  ignore Expires, Cache-Control, Pragma - usually set by application, not server
   if (@headers) {
-    $signature{'header_order'} = join(',', grep { (!/^X-.*/i and !/^Set-Cookie/i and !/^SLASH-LOG-DATA/i and !/^Content-Disposition/i and !/^Content-Language/i and !/^P3P/i and !/^Age/i and !/^Via/i and !/^Keep-Alive/i)} @headers) ;
+    $signature{'header_order'} = join(',', grep { (!/^X-.*/i and !/^Set-Cookie/i and !/^SLASH-LOG-DATA/i and !/^Content-Disposition/i and !/^Content-Language/i and !/^P3P/i and !/^Age/i and !/^Via/i and !/^Keep-Alive/i and !/^Expires/i and !/^Cache-Control/i and !/^Pragma/i)} @headers) ;
   }
 
   # superfluous 100 Continue quirk - none of our tests have any real business getting a 100 Continue back
