@@ -28,21 +28,29 @@ htrosbif - Active HTTP server fingerprinting and recon tool
 
 =head1 SYNOPSIS
 
-htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-m|--matchsigs <signature dir>] [-O|--overlays <overlay dir>] <url>
-
-htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-w|--writesig <signature file>] <url>
-
-htrosbif [-?|-h|--help]
-
-htrosbif [-V|--version]
-
-<url> should be a valid url returning a 200 series status code to a GET request - no redirect or authentication. This restriction may be lifted in the future.
+htrosbif [OPTIONS] <url>
 
 =head1 DESCRIPTION
 
 Does a bit of Recon by Fire, if you will. Prods the web server in all sorts of old, new, basic, fancy, spec-compliant and spec-breaking ways. Tries to characterise both the well-spoken educated responses and the seriously deviant babble it receives in return. Signatures contain no user data, only header names and http-level quirks.
 
 As a useful side effect, might detect reverse proxies, http load balancers, intrusion prevention systems and web application firewalls. Signature generation is mostly manual for these overlays.
+
+=head1 OPTIONS SUMMARY
+
+=head2 Signature matching (default mode)
+
+htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-m|--matchsigs <signature dir>] [-O|--overlays <overlay dir>] [-a|--allmatches] <url>
+
+By default prods <url> and lists top ten matches from ./sigs/*.sig
+
+=head2 Signature generation
+
+htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-w|--writesig <signature file>] <url>
+
+=head1 LIMITATIONS
+
+<url> should be a valid url returning a 200 series status code to a GET request - no redirect or authentication. This restriction may be lifted in the future.
 
 =head1 AUTHOR
 
@@ -80,6 +88,7 @@ my $mediumtimeout = 14;
 my $help = 0;
 my $result;
 my $writesig;
+my $allmatches;
 my $matchsigs = "sigs";
 my $overlaydir = "overlays";
 
@@ -104,6 +113,7 @@ sub print_sane ($)
 $result = GetOptions (	'writesig|w=s' => \$writesig,
 			'matchsigs|m=s'=> \$matchsigs,
 			'overlays|O=s' => \$overlaydir,
+			'allmatches|a' => \$allmatches,
 			'verbose|v'    => \$verbose,
 			'version|V'    => \$version,
 			'timeout=i'    => \$resptimeout,
@@ -456,9 +466,15 @@ if ($matchsigs)
     } # foreach overlay
   }
 
+  # the payoff!
+  # time to show the results...
+  #################################
+  my $numprinted = 0;
   foreach my $match (sort { ($matchscores{$b}/$maxscores{$b}) <=> ($matchscores{$a}/$maxscores{$a}) } keys %matchscores)
   {
     print_sane "Match ($matchscores{$match}/$maxscores{$match}): $match\n";
+    $numprinted++;
+    if ($numprinted eq 10) { last unless $allmatches; }
   }
 }
 
