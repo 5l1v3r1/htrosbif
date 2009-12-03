@@ -1405,6 +1405,7 @@ sub classify_signature()
 
   my $tmp_conn_keep_alive = undef;
   my $tmp_keep_alive = undef;
+  my $tmp_content_length = undef;
 
   # analysis
   LINE: foreach my $line (@lines)
@@ -1514,6 +1515,10 @@ sub classify_signature()
       {
         $tmp_keep_alive = 1;
       }
+      if ($hname =~ m|^Content-Length$|i)
+      {
+        $tmp_content_length = $hcontent;
+      }
     }
   }
   if ($tmp_keep_alive and ! defined ($tmp_conn_keep_alive))
@@ -1565,6 +1570,20 @@ sub classify_signature()
   if ($#body > -1)
   {
     $signature{'response_body'} = 1;
+  }
+
+  if (defined $tmp_content_length)
+  {
+    # Content-Length > real body size? Breaks varnish (#519).
+    my $real_content_length = 0;
+    foreach my $line (@body)
+    {
+       $real_content_length += (length($line) + 2);
+    }
+    if ($real_content_length < $tmp_content_length)
+    {
+       $signature{'content_length'} = 'too_big';
+    }
   }
 
   # no http response found at all?

@@ -32,6 +32,20 @@
          "response_optional" : {
             "response_body" : 1
          }
+      },
+      {
+         "condition" : {
+            "content_length" : "too_big"
+         },
+         "response" : {
+            "response_text" : "Service Unavailable",
+            "header_order" : "Server,Retry-After,Content-Type,Content-Length,Date,Connection",
+            "response_code" : "503",
+            "http_version" : "1.1"
+         },
+         "response_optional" : {
+            "response_body" : 1
+         }
       }
    ],
    "cleaned_requests" : {
