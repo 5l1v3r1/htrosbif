@@ -5,13 +5,7 @@ package htrosbif;
 use strict;
 
 use File::Basename;
-use Getopt::Long qw(:config no_ignore_case);
 use JSON::XS;
-use List::MoreUtils qw(uniq);
-use Pod::Usage;
-use POSIX qw(floor);
-use Test::Deep::NoTest;
-use URI;
 
 my %matchresults;
 
@@ -53,9 +47,5 @@ sub deref_sig
         print JSON::XS->new->pretty(1)->encode($sigref->{$sigpart}) . "\n";
       }
     }
-#    open SIGNAME, ">sigs.deref/" . $sigtomatch or next SIG;
-#    print SIGNAME JSON::XS->new->pretty(1)->encode($sigref);
-#    close SIGNAME ;
   }
-
 
