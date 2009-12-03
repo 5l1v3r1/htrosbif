@@ -12,6 +12,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "doesnotexist_11_knowngood" : {
+      "content_length" : "too_big",
       "response_text" : "Bad Request",
       "header_order" : "Date,Server,Connection,Content-Type,Content-Length",
       "underscore_method_ok" : 1,
@@ -19,6 +20,7 @@
       "http_version" : "1.0"
    },
    "options_11_star" : {
+      "content_length" : "too_big",
       "response_text" : "Bad Request",
       "header_order" : "Date,Server,Connection,Content-Type,Content-Length",
       "response_code" : "400",
