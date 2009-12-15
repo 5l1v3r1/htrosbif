@@ -17,7 +17,7 @@ use Socket;
 use Test::Deep::NoTest;
 use URI;
 
-use constant VERSION => "alpha 3 - bitrot" ;
+use constant VERSION => "alpha 3+ - bitrot" ;
 use feature qw(state);
 
 =encoding utf8
@@ -51,6 +51,11 @@ htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-w|--writesig 
 =head1 LIMITATIONS
 
 <url> should be a valid url returning a 200 series status code to a GET request - no redirect or authentication. This restriction may be lifted in the future.
+
+ todo -
+   stacked overlay matching
+   refactoring - how about a tools/apply_overlay.pl ?
+   alternates - what if the 400/500 is replaced by a happy 302 ?
 
 =head1 AUTHOR
 
@@ -458,6 +463,111 @@ if ($matchsigs)
           } # foreach loop through %visiblematch
         } # foreach loop through fixed_backend_conditional
       }
+
+      if (defined ($overlay->{'modified_responses'}))
+      {
+        my $responsehash = $overlay->{'modified_responses'};
+        foreach my $responsehdr (keys %$responsehash)
+        {
+          print_sane "Modified response - $responsehdr\n" if $debug and $debug >= 2;
+          foreach my $matchresult (keys %visiblematch)
+          {
+            my $visiblesig = $visiblematch{$matchresult};
+            foreach my $sigpart (keys %$visiblesig)
+            {
+              print_sane "Modified response - $matchresult : $sigpart\n" if $debug and $debug >= 2;
+              my $tempsig = deref_sig ($sigpart, $visiblesig);
+              # hides a quirk flag?
+              if ($responsehash->{$responsehdr} eq 'delete')
+              {
+                if (exists $tempsig->{$responsehdr}) {
+                  print_sane "Modified response - deleting $responsehdr from $matchresult : $sigpart\n" if $debug and $debug >= 2;
+                  delete $tempsig->{$responsehdr};
+                }
+              }
+              # may add a quirk flag?
+              elsif ($responsehash->{$responsehdr} eq 'may-add')
+              {
+                if (compare_sigs( deref_sig ($sigpart, \%visibletest), { $responsehdr => 1 } ) > 0)
+                {
+                  print_sane "Modified response - adding $responsehdr to $matchresult : $sigpart\n" if $debug and $debug >= 2;
+                  $tempsig->{$responsehdr} = 1;
+                } else {
+                  print_sane "Modified response - not adding $responsehdr to $matchresult : $sigpart\n" if $debug and $debug >= 2;
+                }
+              }
+              else
+              {
+                my $responsemodifier = $responsehash->{$responsehdr};
+                # strips tokens from the string?
+                if ($responsemodifier->{'strips'})
+                {
+                  if ($tempsig->{$responsehdr})
+                  {
+                    my %taboo;
+                    foreach my $elem (split(',', $responsemodifier->{'strips'}))
+                    {
+                      $taboo{$elem} = 1;
+                    }
+                    print_sane "Tokenlist - pre: $tempsig->{$responsehdr} \n" if $debug and $debug >= 2;
+                    print_sane "Tokenlist - filtered by: $responsemodifier->{'strips'} \n" if $debug and $debug >= 2;
+                    my @tokenlist = split(',', $tempsig->{$responsehdr});
+                    my @filteredtokenlist;
+
+                    while (my $token = shift @tokenlist)
+                    {
+                      unless (exists $taboo{$token})
+                      {
+                        push @filteredtokenlist,$token ;
+                      }
+                    }
+                    my $joined = join(',', @filteredtokenlist);
+                    print_sane "Tokenlist - post: $joined \n" if $debug and $debug >= 2;
+                    $tempsig->{$responsehdr} = $joined;
+                  }
+                } # tokenstripper
+                # appends tokens, unconditionally ?
+                if ($responsemodifier->{'appends'})
+                {
+                  if ($tempsig->{$responsehdr})
+                  {
+                    print_sane "Tokenlist - appending $responsemodifier->{'appends'} to $tempsig->{$responsehdr} \n" if $debug and $debug >= 2;
+                    $tempsig->{$responsehdr} = $tempsig->{$responsehdr} . "," . $responsemodifier->{'appends'};
+                  }
+                } # tokenappender
+                # appends tokens, conditionally ?
+                if ($responsemodifier->{'appendsifmissing'})
+                {
+                  if ($tempsig->{$responsehdr})
+                  {
+                    my %seen;
+
+                    print_sane "Tokenlist - pre: $tempsig->{$responsehdr} \n" if $debug and $debug >= 2;
+                    print_sane "Tokenlist - appendsifmissing: $responsemodifier->{'appendsifmissing'} \n" if $debug and $debug >= 2;
+
+                    my @tokenlist = split(',', $tempsig->{$responsehdr} . "," . $responsemodifier->{'appendsifmissing'});
+                    my @filteredtokenlist;
+
+                    while (my $token = shift @tokenlist)
+                    {
+                      unless (exists $seen{$token})
+                      {
+                        push @filteredtokenlist,$token ;
+                        $seen{$token} = 1;
+                      }
+                    }
+                    my $joined = join(',', @filteredtokenlist);
+                    print_sane "Tokenlist - post: $joined \n" if $debug and $debug >= 2;
+                    $tempsig->{$responsehdr} = $joined;
+                  }
+                } # conditional tokenappender
+              }
+              $visiblesig->{$sigpart} = $tempsig ;
+            } # foreach loop through signature bits
+          } # foreach loop through %visiblematch
+        } # foreach loop through modified_responses
+      }
+
       # - run the matching code on our temporary copies
       match_sigtree(\%visibletest, \%visiblematch, \%matchscores, \%maxscores, $overlayscores{$overlaytomatch}, $overlaymaxes{$overlaytomatch}, $overlaytomatch);
 
