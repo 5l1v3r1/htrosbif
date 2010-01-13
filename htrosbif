@@ -251,6 +251,7 @@ $tmpresult = &test_get_11_headercontinuation(); add_testresult('get_11_headercon
 # error-provoking requests
 $tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult );
 $tmpresult = &test_get_10_cronly(); add_testresult('get_10_cronly', $tmpresult );
+$tmpresult = &test_getlc_10_knowngood(); add_testresult('getlc_10_knowngood', $tmpresult );
 
 $tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult );
 $tmpresult = &test_doesnotexist_11_knowngood();
@@ -1033,6 +1034,38 @@ sub test_get_10_cronly()
 
   # the 99.9% case - we don't want this to signal a likeness
   if (exists $signature{'response_body'}) { delete $signature{'response_body'}; } else { $signature{'no_response_body'} = 1; }
+
+  return $sigref;
+}
+
+sub test_getlc_10_knowngood()
+{
+  # lowercase get test, may sneak through some access restrictions
+  my $request  = "get $path HTTP/1.0\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print_sane "test_getlc_10_knowngood() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print_sane "test_getlc_10_knowngood() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print_sane "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http_unexpected_keepalive'} = 1;
+  }
 
   return $sigref;
 }
