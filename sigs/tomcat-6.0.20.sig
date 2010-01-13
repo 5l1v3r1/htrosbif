@@ -8,8 +8,22 @@
    "get_09_knowngood" : {
       "http09_valid" : 1
    },
+   "get_11_knowngood_percentzero" : {
+      "response_text" : "Bad Request",
+      "no_response_body" : 1,
+      "header_order" : "Server,Content-Length,Date,Connection",
+      "response_code" : "400",
+      "http_version" : "1.1"
+   },
    "get_11_headercontinuation" : {
       "identical_to" : "get_10_knowngood"
+   },
+   "getlc_10_knowngood" : {
+      "response_text" : "Not Implemented",
+      "header_order" : "Server,Content-Type,Content-Length,Date,Connection",
+      "response_code" : "501",
+      "http_version" : "1.1",
+      "response_body" : 1
    },
    "doesnotexist_11_knowngood" : {
       "response_text" : "Not Implemented",

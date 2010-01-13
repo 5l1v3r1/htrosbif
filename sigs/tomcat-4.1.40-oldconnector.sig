@@ -8,8 +8,18 @@
    "get_09_knowngood" : {
       "http09_valid" : 1
    },
+   "get_11_knowngood_percentzero" : {
+      "response_text" : "Internal Server Error",
+      "no_response_body" : 1,
+      "header_order" : "Content-Type,Date,Connection,Server",
+      "response_code" : "500",
+      "http_version" : "1.1"
+   },
    "get_11_headercontinuation" : {
       "identical_to" : "get_10_knowngood"
+   },
+   "getlc_10_knowngood" : {
+      "identical_to" : "options_11_knowngood"
    },
    "doesnotexist_11_knowngood" : {
       "response_text" : "OK",

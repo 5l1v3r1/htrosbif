@@ -13,8 +13,17 @@
       "http09_returnsheaders" : 1,
       "http_version" : "0.9"
    },
+   "get_11_knowngood_percentzero" : {
+      "response_text" : "Forbidden",
+      "header_order" : "Date,Server,Upgrade,Connection,Content-Type,Content-Length",
+      "response_code" : "403",
+      "http_version" : "1.1"
+   },
    "get_11_headercontinuation" : {
       "identical_to" : "get_11_headercontinuation_kind"
+   },
+   "getlc_10_knowngood" : {
+      "connection_closed" : 1
    },
    "doesnotexist_11_knowngood" : {
       "response_text" : "Bad Request",

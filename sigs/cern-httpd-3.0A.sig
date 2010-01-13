@@ -14,8 +14,18 @@
    "get_09_knowngood" : {
       "http09_valid" : 1
    },
+   "get_11_knowngood_percentzero" : {
+      "identical_to" : "get_10_knowngood"
+   },
    "get_11_headercontinuation" : {
       "identical_to" : "get_10_knowngood"
+   },
+   "getlc_10_knowngood" : {
+      "response_text" : "Invalid request \"get / HTTP/1.0\" (unknown method)",
+      "header_order" : "Server,Date,Content-Type,Content-Length",
+      "response_code" : "400",
+      "http_version" : "1.0",
+      "response_body" : 1
    },
    "doesnotexist_11_knowngood" : {
       "response_text" : "Invalid request \"DOESNOTEXIST / HTTP/1.1\" (unknown method)",

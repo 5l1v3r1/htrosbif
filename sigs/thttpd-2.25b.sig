@@ -8,11 +8,24 @@
    "get_09_knowngood" : {
       "http09_valid" : 1
    },
+   "get_11_knowngood_percentzero" : {
+      "response_text" : "Not Found",
+      "header_order" : "Server,Content-Type,Date,Last-Modified,Accept-Ranges,Connection",
+      "response_code" : "404",
+      "http_version" : "1.1"
+   },
    "get_11_headercontinuation" : {
       "response_text" : "Bad Request",
       "header_order" : "Server,Content-Type,Date,Last-Modified,Accept-Ranges,Connection",
       "response_code" : "400",
       "http_version" : "1.1"
+   },
+   "getlc_10_knowngood" : {
+      "response_text" : "OK",
+      "header_order" : "Server,Content-Type,Date,Last-Modified,Accept-Ranges,Connection",
+      "response_code" : "200",
+      "http_version" : "1.0",
+      "response_body" : 1
    },
    "doesnotexist_11_knowngood" : {
       "response_text" : "Not Implemented",

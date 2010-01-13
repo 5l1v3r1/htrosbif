@@ -12,8 +12,18 @@
       "http09_returnsheaders" : 1,
       "http_version" : "1.1"
    },
+   "get_11_knowngood_percentzero" : {
+      "response_text" : "Bad Request",
+      "no_response_body" : 1,
+      "header_order" : "Server,Content-Length,Date,Connection",
+      "response_code" : "400",
+      "http_version" : "1.1"
+   },
    "get_11_headercontinuation" : {
       "identical_to" : "get_10_knowngood"
+   },
+   "getlc_10_knowngood" : {
+      "identical_to" : "options_11_knowngood"
    },
    "doesnotexist_11_knowngood" : {
       "response_text" : "OK",

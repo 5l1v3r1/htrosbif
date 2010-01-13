@@ -8,8 +8,17 @@
    "get_09_knowngood" : {
       "connection_closed" : 1
    },
+   "get_11_knowngood_percentzero" : {
+      "response_text" : "Not found",
+      "header_order" : "Content-Length,Content-Type",
+      "response_code" : "404",
+      "http_version" : "1.0"
+   },
    "get_11_headercontinuation" : {
       "identical_to" : "get_11_knowngood"
+   },
+   "getlc_10_knowngood" : {
+      "identical_to" : "options_11_star"
    },
    "doesnotexist_11_knowngood" : {
       "response_text" : "Not implemented",

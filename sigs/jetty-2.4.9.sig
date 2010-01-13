@@ -13,8 +13,22 @@
       "http09_returnsheaders" : 1,
       "http_version" : "1.0"
    },
+   "get_11_knowngood_percentzero" : {
+      "superfluous_100_continue" : 1,
+      "response_text" : "NOT FOUND",
+      "header_order" : "Content-Type,MIME-Version,Server,Date,Connection,Last-Modified",
+      "response_code" : "404",
+      "http_version" : "1.1"
+   },
    "get_11_headercontinuation" : {
       "identical_to" : "get_11_knowngood"
+   },
+   "getlc_10_knowngood" : {
+      "response_text" : "NOT IMPLEMENTED",
+      "header_order" : "Content-Type,MIME-Version,Server,Date,Last-Modified,Connection",
+      "response_code" : "501",
+      "http_version" : "1.0",
+      "response_body" : 1
    },
    "doesnotexist_11_knowngood" : {
       "superfluous_100_continue" : 1,

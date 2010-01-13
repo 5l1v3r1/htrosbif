@@ -8,8 +8,17 @@
    "get_09_knowngood" : {
       "http09_valid" : 1
    },
+   "get_11_knowngood_percentzero" : {
+      "response_text" : "Bad Request",
+      "header_order" : "Date,Server,Content-Type",
+      "response_code" : "400",
+      "http_version" : "1.0"
+   },
    "get_11_headercontinuation" : {
       "identical_to" : "get_10_knowngood"
+   },
+   "getlc_10_knowngood" : {
+      "identical_to" : "options_11_star"
    },
    "doesnotexist_11_knowngood" : {
       "response_text" : "Bad Request",

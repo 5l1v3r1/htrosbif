@@ -12,8 +12,21 @@
       "http09_returnsheaders" : 1,
       "http_version" : "1.0"
    },
+   "get_11_knowngood_percentzero" : {
+      "response_text" : "Not Found",
+      "header_order" : "Date,Status,Servlet-Engine,Content-Type",
+      "response_code" : "404",
+      "http_version" : "1.0"
+   },
    "get_11_headercontinuation" : {
       "identical_to" : "get_10_knowngood"
+   },
+   "getlc_10_knowngood" : {
+      "response_text" : "Not Implemented",
+      "header_order" : "Date,Status,Servlet-Engine,Content-Type",
+      "response_code" : "501",
+      "http_version" : "1.0",
+      "response_body" : 1
    },
    "doesnotexist_11_knowngood" : {
       "response_text" : "Not Implemented",
