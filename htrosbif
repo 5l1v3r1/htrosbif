@@ -264,7 +264,7 @@ if ( eq_deeply( $tmpresult, deref_sig ('hairy_method_11_knowngood', \%testresult
 add_testresult('doesnotexist_11_knowngood', $tmpresult );
 
 # evil requests
-# (none yet)
+$tmpresult = &test_get_11_knowngood_percentzero(); add_testresult('get_11_knowngood_percentzero', $tmpresult );
 
 # dump results
 if ($verbose and %testresults) {
@@ -1397,6 +1397,43 @@ sub test_get_20_knowngood()
 
   # irrelevant
   if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
+
+  return $sigref;
+}
+
+sub test_get_11_knowngood_percentzero()
+{
+  # Evil test - truncated/invalid urlencoding.
+  # Connection: close, for convenience.
+  my $request  = "GET $path%0 HTTP/1.1\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print_sane "test_get_11_knowngood_percentzero() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print_sane "test_get_11_knowngood_percentzero() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print_sane "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
+  }
+
+  # the 99.9% case - we don't want this to signal a likeness
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; } else { $signature{'no_response_body'} = 1; }
 
   return $sigref;
 }
