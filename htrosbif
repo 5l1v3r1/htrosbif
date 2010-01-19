@@ -255,12 +255,14 @@ $tmpresult = &test_getlc_10_knowngood(); add_testresult('getlc_10_knowngood', $t
 
 $tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult );
 $tmpresult = &test_doesnotexist_11_knowngood();
-# play down the significance of the hairy_method test, mostly a small nginx quirk
+# reduce hairy_method test to a doesnotexist test quirk
 if ( eq_deeply( $tmpresult, deref_sig ('hairy_method_11_knowngood', \%testresults) ) )
 {
-  delete $testresults{'hairy_method_11_knowngood'};
   $tmpresult->{'underscore_method_ok'} = 1;
+} else {
+  $tmpresult->{'underscore_method_ok'} = 0;
 }
+delete $testresults{'hairy_method_11_knowngood'};
 add_testresult('doesnotexist_11_knowngood', $tmpresult );
 
 # evil requests
