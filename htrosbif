@@ -17,7 +17,7 @@ use Socket;
 use Test::Deep::NoTest;
 use URI;
 
-use constant VERSION => "alpha 3+ - bitrot" ;
+use constant VERSION => "alpha 4 - fatigue" ;
 use feature qw(state);
 
 =encoding utf8
@@ -40,7 +40,7 @@ As a useful side effect, might detect reverse proxies, http load balancers, intr
 
 =head2 Signature matching (default mode)
 
-htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-m|--matchsigs <signature dir>] [-O|--overlays <overlay dir>] [-a|--allmatches] <url>
+htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-m|--matchsigs <signature dir>] [-O|--overlays <overlay dir>] [-a|--allmatches] (<url> || [-r|--readsig <captured signature>])
 
 By default prods <url> and lists top ten matches from ./sigs/*.sig
 
@@ -63,7 +63,7 @@ Erik Inge Bolsø <knan-rosbif@anduin.net> originally wrote this tool.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2009, Erik Inge Bolsø.
+Copyright (C) 2009,2010 Erik Inge Bolsø.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -92,6 +92,7 @@ my $resptimeout = 2;
 my $mediumtimeout = 14;
 my $help = 0;
 my $result;
+my $readsig;
 my $writesig;
 my $allmatches;
 my $matchsigs = "sigs";
@@ -116,6 +117,7 @@ sub print_sane ($)
 ########################
 
 $result = GetOptions (	'writesig|w=s' => \$writesig,
+			'readsig|r=s'  => \$readsig,
 			'matchsigs|m=s'=> \$matchsigs,
 			'overlays|O=s' => \$overlaydir,
 			'allmatches|a' => \$allmatches,
@@ -133,12 +135,22 @@ if ($version)
   exit 0;
 }
 
-my $url = $ARGV[0] or die "No url given, nothing to do. -h for help.\n";
-my $uri = URI->new($url);
-my $host = $uri->host;
-my $port = $uri->port;
-my $path = $uri->path;
-my $scheme = $uri->scheme;
+my $url = $ARGV[0];
+die "No url given, nothing to do. -h for help.\n" unless ($readsig || $url) ;
+my $uri;
+my $host;
+my $port;
+my $path;
+my $scheme;
+
+if ($url)
+{
+  $uri = URI->new($url);
+  $host = $uri->host;
+  $port = $uri->port;
+  $path = $uri->path;
+  $scheme = $uri->scheme;
+}
 
 my %testresults;
 my $tmpresult;
@@ -177,6 +189,27 @@ if ($matchsigs)
   }
 }
 
+if ($readsig)
+{
+  if ($readsig =~ m|[^$OK_CHARS]|)
+  {
+    warn ("Unacceptable characters in -r filename, ignoring option\n");
+    undef $readsig;
+  } else {
+    $readsig =~ /(.*)/;
+    $readsig = $1;
+  }
+  if (! (-e $readsig and -f $readsig and -r $readsig) )
+  {
+    warn ("Signature '$readsig' not readable, ignoring -r option\n");
+    undef $readsig;
+  } else {
+    undef $uri; # readsig overrides url and writesig
+    undef $url;
+    undef $writesig;
+  }
+}
+
 if ($overlaydir)
 {
   if ($overlaydir =~ m|[^$OK_CHARS]|)
@@ -195,7 +228,7 @@ if ($overlaydir)
 }
 
 # XXX: actually, no https yet.
-unless ($scheme eq "http" or $scheme eq "https") { die "only supports http and https URI schemes, for now.\n" ; }
+unless ($readsig or $scheme eq "http" or $scheme eq "https") { die "only supports http and https URI schemes, for now.\n" ; }
 
 # load signatures for matching
 if ($matchsigs)
@@ -231,55 +264,70 @@ if ($overlaydir)
   if ($verbose) { print_sane keys (%overlays) . " overlays loaded.\n" ; }
 }
 
-print_sane "actively fingerprinting...\n" if ($verbose) ;
-
-# is_namevhost();
-
-# friendly requests, should mostly work
-$tmpresult = &test_get_10_knowngood(); add_testresult('get_10_knowngood', $tmpresult );
-$tmpresult = &test_get_11_knowngood(); add_testresult('get_11_knowngood', $tmpresult );
-$tmpresult = &test_get_09_knowngood(); add_testresult('get_09_knowngood', $tmpresult );
-$tmpresult = &test_options_11_star(); add_testresult('options_11_star', $tmpresult );
-$tmpresult = &test_options_11_knowngood(); add_testresult('options_11_knowngood', $tmpresult );
-
-# borderline requests
-$tmpresult = &test_get_11_headercontinuation_kind(); add_testresult('get_11_headercontinuation_kind', $tmpresult );
-$tmpresult = &test_get_12_knowngood(); add_testresult('get_12_knowngood', $tmpresult );
-$tmpresult = &test_get_10_nlonly(); add_testresult('get_10_nlonly', $tmpresult );
-$tmpresult = &test_get_11_headercontinuation(); add_testresult('get_11_headercontinuation', $tmpresult );
-
-# error-provoking requests
-$tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult );
-$tmpresult = &test_get_10_cronly(); add_testresult('get_10_cronly', $tmpresult );
-$tmpresult = &test_getlc_10_knowngood(); add_testresult('getlc_10_knowngood', $tmpresult );
-
-$tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult );
-$tmpresult = &test_doesnotexist_11_knowngood();
-# reduce hairy_method test to a doesnotexist test quirk
-if ( eq_deeply( $tmpresult, deref_sig ('hairy_method_11_knowngood', \%testresults) ) )
+unless ($readsig)
 {
-  $tmpresult->{'underscore_method_ok'} = 1;
-} else {
-  $tmpresult->{'underscore_method_ok'} = 0;
-}
-delete $testresults{'hairy_method_11_knowngood'};
-add_testresult('doesnotexist_11_knowngood', $tmpresult );
+  print_sane "actively fingerprinting...\n" if ($verbose) ;
 
-# evil requests
-$tmpresult = &test_get_11_knowngood_percentzero(); add_testresult('get_11_knowngood_percentzero', $tmpresult );
+  # is_namevhost();
 
-# dump results
-if ($verbose and %testresults) {
-  print_sane "\n";
-  print_sane "test results:\n" ;
-  foreach (sort keys %testresults) {
-    print_sane "$_:\n\n";
-    my $tmphashref = $testresults{$_} ;
-    foreach my $sigkey (sort keys %$tmphashref) {
-       print_sane " $sigkey: $tmphashref->{ $sigkey }\n";
-    }
-  print_sane "\n";
+  # friendly requests, should mostly work
+  $tmpresult = &test_get_10_knowngood(); add_testresult('get_10_knowngood', $tmpresult );
+  $tmpresult = &test_get_11_knowngood(); add_testresult('get_11_knowngood', $tmpresult );
+  $tmpresult = &test_get_09_knowngood(); add_testresult('get_09_knowngood', $tmpresult );
+  $tmpresult = &test_options_11_star(); add_testresult('options_11_star', $tmpresult );
+  $tmpresult = &test_options_11_knowngood(); add_testresult('options_11_knowngood', $tmpresult );
+
+  # borderline requests
+  $tmpresult = &test_get_11_headercontinuation_kind(); add_testresult('get_11_headercontinuation_kind', $tmpresult );
+  $tmpresult = &test_get_12_knowngood(); add_testresult('get_12_knowngood', $tmpresult );
+  $tmpresult = &test_get_10_nlonly(); add_testresult('get_10_nlonly', $tmpresult );
+  $tmpresult = &test_get_11_headercontinuation(); add_testresult('get_11_headercontinuation', $tmpresult );
+
+  # error-provoking requests
+  $tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult );
+  $tmpresult = &test_get_10_cronly(); add_testresult('get_10_cronly', $tmpresult );
+  $tmpresult = &test_getlc_10_knowngood(); add_testresult('getlc_10_knowngood', $tmpresult );
+
+  $tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult );
+  $tmpresult = &test_doesnotexist_11_knowngood();
+  # reduce hairy_method test to a doesnotexist test quirk
+  if ( eq_deeply( $tmpresult, deref_sig ('hairy_method_11_knowngood', \%testresults) ) )
+  {
+    $tmpresult->{'underscore_method_ok'} = 1;
+  } else {
+    $tmpresult->{'underscore_method_ok'} = 0;
   }
+  delete $testresults{'hairy_method_11_knowngood'};
+  add_testresult('doesnotexist_11_knowngood', $tmpresult );
+
+  # evil requests
+  $tmpresult = &test_get_11_knowngood_percentzero(); add_testresult('get_11_knowngood_percentzero', $tmpresult );
+
+  # dump results
+  if ($verbose and %testresults) {
+    print_sane "\n";
+    print_sane "test results:\n" ;
+    foreach (sort keys %testresults) {
+      print_sane "$_:\n\n";
+      my $tmphashref = $testresults{$_} ;
+      foreach my $sigkey (sort keys %$tmphashref) {
+         print_sane " $sigkey: $tmphashref->{ $sigkey }\n";
+      }
+    print_sane "\n";
+    }
+  }
+}
+
+if ($readsig)
+{
+  open SIGNAME, "<" . $readsig or die "Can't open signature $readsig after all, strange. Aborting.\n";
+  my $sig = join '', <SIGNAME> ;
+  close SIGNAME ;
+  my $tmp_testresults = eval { decode_json($sig); };
+  warn ("Error parsing signature \"$readsig\", skipped\n") if ($@);
+  warn ($@) if ($@);
+  die "Parse error.\n" if ($@);
+  %testresults = %$tmp_testresults;
 }
 
 # signature matching
