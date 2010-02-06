@@ -12,7 +12,10 @@
       "identical_to" : "get_10_knowngood"
    },
    "get_11_headercontinuation" : {
-      "identical_to" : "get_10_knowngood"
+      "response_text" : "Bad Request",
+      "header_order" : "Server,Date,Content-Type,Content-Length,Connection",
+      "response_code" : "400",
+      "http_version" : "1.1"
    },
    "getlc_10_knowngood" : {
       "identical_to" : "options_11_star"
@@ -20,7 +23,7 @@
    "doesnotexist_11_knowngood" : {
       "response_text" : "Not Allowed",
       "header_order" : "Server,Date,Content-Type,Content-Length,Connection",
-      "underscore_method_ok" : 0,
+      "underscore_method_ok" : 1,
       "response_code" : "405",
       "http_version" : "1.1"
    },

@@ -5,9 +5,6 @@
       "response_code" : "200",
       "http_version" : "1.1"
    },
-   "hairy_method_11_knowngood" : {
-      "identical_to" : "options_11_star"
-   },
    "get_09_knowngood" : {
       "http09_valid" : 1
    },
@@ -26,6 +23,7 @@
    "doesnotexist_11_knowngood" : {
       "response_text" : "Not Allowed",
       "header_order" : "Server,Date,Content-Type,Content-Length,Connection",
+      "underscore_method_ok" : 0,
       "response_code" : "405",
       "http_version" : "1.1"
    },

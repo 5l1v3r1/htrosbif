@@ -5,12 +5,6 @@
       "response_code" : "200",
       "http_version" : "1.0"
    },
-   "hairy_method_11_knowngood" : {
-      "response_text" : "Invalid request \"HAIRY_METHOD / HTTP/1.1\" (unknown method)",
-      "header_order" : "Server,Date,Content-Type,Content-Length",
-      "response_code" : "400",
-      "http_version" : "1.0"
-   },
    "get_09_knowngood" : {
       "http09_valid" : 1
    },
@@ -30,6 +24,7 @@
    "doesnotexist_11_knowngood" : {
       "response_text" : "Invalid request \"DOESNOTEXIST / HTTP/1.1\" (unknown method)",
       "header_order" : "Server,Date,Content-Type,Content-Length",
+      "underscore_method_ok" : 0,
       "response_code" : "400",
       "http_version" : "1.0"
    },

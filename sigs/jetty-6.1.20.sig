@@ -5,12 +5,6 @@
       "response_code" : "200",
       "http_version" : "1.1"
    },
-   "hairy_method_11_knowngood" : {
-      "response_text" : "Method HAIRY_METHOD is not defined in RFC 2068 and is not supported by the Servlet API ",
-      "header_order" : "Date,Connection,Server",
-      "response_code" : "501",
-      "http_version" : "1.1"
-   },
    "get_09_knowngood" : {
       "http09_valid" : 1
    },
@@ -33,6 +27,7 @@
    "doesnotexist_11_knowngood" : {
       "response_text" : "Method DOESNOTEXIST is not defined in RFC 2068 and is not supported by the Servlet API ",
       "header_order" : "Date,Connection,Server",
+      "underscore_method_ok" : 0,
       "response_code" : "501",
       "http_version" : "1.1"
    },
