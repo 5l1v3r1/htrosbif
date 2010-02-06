@@ -114,6 +114,12 @@ sub print_sane ($)
   print $unclean ;
 }
 
+sub debug_dump
+{
+  my $hashref = $_[0];
+  print JSON::XS->new->pretty(1)->encode($hashref);
+}
+
 ########################
 
 $result = GetOptions (	'writesig|w=s' => \$writesig,
@@ -499,15 +505,18 @@ if ($matchsigs)
               my $tempsig = $visiblesig->{$sigpart};
               if ($tempsig->{$condkey} and $tempsig->{$condkey} eq $condval)
               {
-                $visiblesig->{$sigpart} = $replacementresponse;
+		# fresh copy every time, please
+		my %replaceme = %$replacementresponse;
+		$visiblesig->{$sigpart} = \%replaceme;
                 # add response_optional bit, if it looks convenient
                 if (compare_sigs( deref_sig ($sigpart, \%visibletest), $optionalresponse) > 0)
                 {
-                  $tempsig = $visiblesig->{$sigpart};
+                  $tempsig = deref_sig ($sigpart, $visiblesig);
                   foreach my $key (keys %$optionalresponse)
                   {
                     $tempsig->{$key} = $optionalresponse->{$key};
                   }
+		  $visiblesig->{$sigpart} = $tempsig;
                 }
               } # if match! transform!
             } # foreach loop through signature bits
@@ -785,6 +794,7 @@ sub compare_sigs
          $sig1->{$key} eq $sig2->{$key})
     {
       $score+=$matchscore;
+      print_sane "match! key = $key\n" if ($debug and $debug >= 3);
     }
     elsif ( exists $sig1->{$key} and
             exists $sig2->{$key} and
@@ -862,6 +872,7 @@ sub compare_sigs
     }
   }
 
+  print_sane "match_sigs: score = $score\n" if ($debug and $debug >= 2);
   return floor ($score * $perfectmatch / ($matchscore * $count));
 }
 
