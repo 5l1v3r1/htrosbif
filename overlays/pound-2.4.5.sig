@@ -24,7 +24,6 @@
          "delayed_reply" : 1,
          "connection_closed" : 1
       },
-      "hairy_method_11_knowngood" : "delete",
       "doesnotexist_11_knowngood" : {
          "response_text" : "Not Implemented",
          "header_order" : "Content-Type,Content-Length",
@@ -37,7 +36,6 @@
       "options_11_knowngood" : {
          "response_text" : "Not Implemented",
          "header_order" : "Content-Type,Content-Length",
-         "underscore_method_ok" : 1,
          "response_code" : "501",
          "http_version" : "1.0",
          "response_body" : 1
@@ -45,7 +43,6 @@
       "options_11_star" : {
          "response_text" : "Not Implemented",
          "header_order" : "Content-Type,Content-Length",
-         "underscore_method_ok" : 1,
          "response_code" : "501",
          "http_version" : "1.0",
          "response_body" : 1
