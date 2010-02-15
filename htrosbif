@@ -151,6 +151,7 @@ my $scheme;
 
 if ($url)
 {
+  $url =~ s/^/http:\/\// if not $url =~ /^http:\/\//; # prepend http:// for now if missing, revisit for https support.
   $uri = URI->new($url);
   $host = $uri->host;
   $port = $uri->port;
@@ -953,6 +954,9 @@ sub is_namevhost()
 
 sub test_get_10_knowngood()
 {
+  my $try = 1;
+
+buildtest:
   # tests a plain HTTP/1.0 request with Host header and a bland User-Agent.
   # no Accept: headers, in order to see default values.
   my $request  = "GET $path HTTP/1.0\r\n";
@@ -992,6 +996,12 @@ sub test_get_10_knowngood()
   if (   (exists $signature{'response_code'} and $signature{'response_code'} != "200")
       or  exists $signature{'connection_refused'} )
   {
+    # last-ditch typofixing, add / to end of url - $path is global (for all practical purposes), so this all works out.
+    if($try++ == 1)
+    {
+      $path =~ s/$/\//;
+      goto buildtest;
+    }
     print STDERR "The web server isn't responding politely to a plain HTTP/1.0 GET request.\n";
     print STDERR "Signature matching and generation won't work reliably - bailing out.\n";
     exit(1);
