@@ -157,6 +157,9 @@ if ($url)
   $port = $uri->port;
   $path = $uri->path;
   $scheme = $uri->scheme;
+
+  # empty $path just isn't going to work. We need at least a / for proper operation.
+  unless ($path) { $path = "/"; }
 }
 
 my %testresults;
