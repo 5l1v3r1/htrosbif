@@ -631,6 +631,11 @@ if ($matchsigs)
                     print_sane "Tokenlist - appending $responsemodifier->{'appends'} to $tempsig->{$responsehdr} \n" if $debug and $debug >= 2;
                     $tempsig->{$responsehdr} = $tempsig->{$responsehdr} . "," . $responsemodifier->{'appends'};
                   }
+		  elsif ($tempsig->{'http_version'})
+		  {
+                    print_sane "Tokenlist - post: $responsemodifier->{'appends'} \n" if $debug and $debug >= 2;
+		    $tempsig->{$responsehdr} = $responsemodifier->{'appends'};
+		  }
                 } # tokenappender
                 # appends tokens, conditionally ?
                 if ($responsemodifier->{'appendsifmissing'})
@@ -657,6 +662,11 @@ if ($matchsigs)
                     print_sane "Tokenlist - post: $joined \n" if $debug and $debug >= 2;
                     $tempsig->{$responsehdr} = $joined;
                   }
+		  elsif ($tempsig->{'http_version'})
+		  {
+                    print_sane "Tokenlist - post: $responsemodifier->{'appendsifmissing'} \n" if $debug and $debug >= 2;
+		    $tempsig->{$responsehdr} = $responsemodifier->{'appendsifmissing'};
+		  }
                 } # conditional tokenappender
               }
               $visiblesig->{$sigpart} = $tempsig ;
