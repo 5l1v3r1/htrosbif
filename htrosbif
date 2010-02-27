@@ -593,6 +593,17 @@ if ($matchsigs)
                   print_sane "Modified response - not adding $responsehdr to $matchresult : $sigpart\n" if $debug and $debug >= 2;
                 }
               }
+              # may delete a quirk flag?
+              elsif ($responsehash->{$responsehdr} eq 'may-delete')
+              {
+                if (compare_sigs( deref_sig ($sigpart, \%visibletest), { $responsehdr => 1 } ) > 0)
+                {
+                  print_sane "Modified response - not deleting $responsehdr to $matchresult : $sigpart\n" if $debug and $debug >= 2;
+                } else {
+                  print_sane "Modified response - deleting $responsehdr to $matchresult : $sigpart\n" if $debug and $debug >= 2;
+                  delete $tempsig->{$responsehdr};
+                }
+              }
               else
               {
                 my $responsemodifier = $responsehash->{$responsehdr};
@@ -668,6 +679,20 @@ if ($matchsigs)
 		    $tempsig->{$responsehdr} = $responsemodifier->{'appendsifmissing'};
 		  }
                 } # conditional tokenappender
+                # replacement ?
+                if ($responsemodifier->{'replaced_by'})
+                {
+                  if (exists $tempsig->{$responsehdr}) {
+                    print_sane "Modified response - replacing $responsehdr from $matchresult : $sigpart\n" if $debug and $debug >= 2;
+                    delete $tempsig->{$responsehdr};
+		    my $replacements = $responsemodifier->{'replaced_by'};
+		    foreach my $key (keys %$replacements)
+		    {
+                      print_sane "Modified response - replacing - adding $key = $replacements->{$key}\n" if $debug and $debug >= 2;
+		      $tempsig->{$key} = $replacements->{$key};
+		    }
+                  }
+                } # replacement
               }
               $visiblesig->{$sigpart} = $tempsig ;
             } # foreach loop through signature bits
@@ -901,6 +926,11 @@ sub compare_sigs
   my $matchscore = 10;
   my $perfectmatch = 100;
   my $score = 0;
+
+  print_sane ("sig1 dump: ") if ($debug and $debug >= 4);
+  debug_dump ($sig1) if ($debug and $debug >= 4);
+  print_sane ("sig2 dump: ") if ($debug and $debug >= 4);
+  debug_dump ($sig2) if ($debug and $debug >= 4);
 
   foreach my $key (uniq (keys %$sig1, keys %$sig2))
   {
@@ -1922,6 +1952,8 @@ sub classify_signature()
   my $tmp_conn_keep_alive = undef;
   my $tmp_keep_alive = undef;
   my $tmp_content_length = undef;
+  my $tmp_conn = undef;
+  my $tmp_date = undef;
 
   # analysis
   LINE: foreach my $line (@lines)
@@ -2026,6 +2058,30 @@ sub classify_signature()
         {
           $tmp_conn_keep_alive = 1;
         }
+
+	# zope quirk - duplicate connection header
+	if ($tmp_conn)
+	{
+	  pop @headers;
+	  $signature{'duplicate_connection_header'} = 1;
+	}
+	else
+	{
+	  $tmp_conn = 1;
+	}
+      }
+      if ($hname =~ m|^Date$|i)
+      {
+	# zope quirk - duplicate date header
+	if ($tmp_date)
+	{
+	  pop @headers;
+	  $signature{'duplicate_date_header'} = 1;
+	}
+	else
+	{
+	  $tmp_date = 1;
+	}
       }
       if ($hname =~ m|^Keep-Alive$|i)
       {
