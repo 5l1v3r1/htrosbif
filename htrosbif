@@ -168,6 +168,10 @@ my $tmpresult;
 my %matchresults;
 my %overlays;
 
+my %firstclasstests;
+my %secondclasstests;
+my %thirdclasstests;
+
 my $OK_CHARS='-a-zA-Z0-9_./';
 if ($writesig)
 {
@@ -281,37 +285,32 @@ unless ($readsig)
   # is_namevhost();
 
   # friendly requests, should mostly work
-  $tmpresult = &test_get_10_knowngood(); add_testresult('get_10_knowngood', $tmpresult );
-  $tmpresult = &test_get_11_knowngood(); add_testresult('get_11_knowngood', $tmpresult );
-  $tmpresult = &test_get_09_knowngood(); add_testresult('get_09_knowngood', $tmpresult );
-  $tmpresult = &test_options_11_star(); add_testresult('options_11_star', $tmpresult );
-  $tmpresult = &test_options_11_knowngood(); add_testresult('options_11_knowngood', $tmpresult );
+  $tmpresult = &test_get_10_knowngood(); add_testresult('get_10_knowngood', $tmpresult, 1 );
+  $tmpresult = &test_get_11_knowngood(); add_testresult('get_11_knowngood', $tmpresult, 1 );
+  $tmpresult = &test_get_09_knowngood(); add_testresult('get_09_knowngood', $tmpresult, 1 );
+  $tmpresult = &test_options_11_star(); add_testresult('options_11_star', $tmpresult, 1 );
+  $tmpresult = &test_options_11_knowngood(); add_testresult('options_11_knowngood', $tmpresult, 1 );
 
   # borderline requests
-  $tmpresult = &test_get_11_headercontinuation_kind(); add_testresult('get_11_headercontinuation_kind', $tmpresult );
-  $tmpresult = &test_get_12_knowngood(); add_testresult('get_12_knowngood', $tmpresult );
-  $tmpresult = &test_get_10_nlonly(); add_testresult('get_10_nlonly', $tmpresult );
-  $tmpresult = &test_get_11_headercontinuation(); add_testresult('get_11_headercontinuation', $tmpresult );
+  $tmpresult = &test_get_12_knowngood(); add_testresult('get_12_knowngood', $tmpresult, 1 );
+  $tmpresult = &test_get_10_nlonly(); add_testresult('get_10_nlonly', $tmpresult, 1 );
+  $tmpresult = &test_get_11_headercontinuation_kind(); add_testresult('get_11_headercontinuation_kind', $tmpresult, 1 );
+  $tmpresult = &test_get_11_headercontinuation_kind_unfold_sst(); add_testresult('get_11_headercontinuation_kind_unfold_sst', $tmpresult, 2 );
+  $tmpresult = &test_get_11_headercontinuation_kind_unfold_sss(); add_testresult('get_11_headercontinuation_kind_unfold_sss', $tmpresult, 2 );
+  $tmpresult = &test_get_11_headercontinuation(); add_testresult('get_11_headercontinuation', $tmpresult, 1 );
+  $tmpresult = &test_get_11_headercontinuation_unfold_sst(); add_testresult('get_11_headercontinuation_unfold_sst', $tmpresult, 2 );
+  $tmpresult = &test_get_11_headercontinuation_unfold_sss(); add_testresult('get_11_headercontinuation_unfold_sss', $tmpresult, 2 );
 
   # error-provoking requests
-  $tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult );
-  $tmpresult = &test_get_10_cronly(); add_testresult('get_10_cronly', $tmpresult );
-  $tmpresult = &test_getlc_10_knowngood(); add_testresult('getlc_10_knowngood', $tmpresult );
+  $tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult, 1 );
+  $tmpresult = &test_get_10_cronly(); add_testresult('get_10_cronly', $tmpresult, 1 );
+  $tmpresult = &test_getlc_10_knowngood(); add_testresult('getlc_10_knowngood', $tmpresult, 1 );
 
-  $tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult );
-  $tmpresult = &test_doesnotexist_11_knowngood();
-  # reduce hairy_method test to a doesnotexist test quirk
-  if ( eq_deeply( $tmpresult, deref_sig ('hairy_method_11_knowngood', \%testresults) ) )
-  {
-    $tmpresult->{'underscore_method_ok'} = 1;
-  } else {
-    $tmpresult->{'underscore_method_ok'} = 0;
-  }
-  delete $testresults{'hairy_method_11_knowngood'};
-  add_testresult('doesnotexist_11_knowngood', $tmpresult );
+  $tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult, 2 );
+  $tmpresult = &test_doesnotexist_11_knowngood(); add_testresult('doesnotexist_11_knowngood', $tmpresult, 1 );
 
   # evil requests
-  $tmpresult = &test_get_11_knowngood_percentzero(); add_testresult('get_11_knowngood_percentzero', $tmpresult );
+  $tmpresult = &test_get_11_knowngood_percentzero(); add_testresult('get_11_knowngood_percentzero', $tmpresult, 1 );
 
   # dump results
   if ($verbose and %testresults) {
@@ -676,6 +675,7 @@ sub add_testresult
 {
   my $sigkeyname = $_[0];
   my $signature  = $_[1];
+  my $testclass  = $_[2];
 
   # compress identical results into one result + references
   # max one extra level of indirection, shouldn't slow anything down
@@ -693,6 +693,10 @@ sub add_testresult
     }
   }
   $testresults{$sigkeyname} = $signature ;
+
+  $firstclasstests{$sigkeyname} = 1 if ($testclass == 1) ;
+  $secondclasstests{$sigkeyname} = 1 if ($testclass == 2) ;
+  $thirdclasstests{$sigkeyname} = 1 if ($testclass == 3) ;
 }
 
 sub del_testresult
@@ -920,7 +924,7 @@ sub test_get_09_knowngood()
 
     my $sigref2 = classify_signature(@data);
 
-    # ignore.
+    # get test, ignore.
     if (exists $sigref2->{'response_body'}) { delete $sigref2->{'response_body'} ; }
 
     # irrelevant for http/0.9, false positive
@@ -1010,8 +1014,8 @@ buildtest:
     exit(1);
   }
 
-  # the 99.9% case - we don't want this to signal a likeness
-  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; } else { $signature{'no_response_body'} = 1; }
+  # get test, ignore
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
 
   return $sigref;
 }
@@ -1058,8 +1062,8 @@ sub test_get_10_nlonly()
     $signature{'http_unexpected_keepalive'} = 1;
   }
 
-  # the 99.9% case - we don't want this to signal a likeness
-  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; } else { $signature{'no_response_body'} = 1; }
+  # get test, ignore
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
 
   return $sigref;
 }
@@ -1106,8 +1110,8 @@ sub test_get_10_cronly()
     $signature{'http_unexpected_keepalive'} = 1;
   }
 
-  # the 99.9% case - we don't want this to signal a likeness
-  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; } else { $signature{'no_response_body'} = 1; }
+  # get test, ignore
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
 
   return $sigref;
 }
@@ -1140,6 +1144,9 @@ sub test_getlc_10_knowngood()
     delete $signature{'does_keepalive'};
     $signature{'http_unexpected_keepalive'} = 1;
   }
+
+  # get test, ignore
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
 
   return $sigref;
 }
@@ -1176,8 +1183,8 @@ sub test_get_11_knowngood()
     $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
 
-  # the 99.9% case - we don't want this to signal a likeness
-  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; } else { $signature{'no_response_body'} = 1; }
+  # get test, ignore
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
 
   return $sigref;
 }
@@ -1217,7 +1224,83 @@ sub test_get_11_headercontinuation_kind()
     $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
 
-  # irrelevant
+  # get test, ignore
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
+
+  return $sigref;
+}
+
+sub test_get_11_headercontinuation_kind_unfold_sst()
+{
+  # HTTP/1.1 fun with header continuation, unfolded by proxy to "  \t"
+
+  # kind variant - folds User-Agent header
+  my $request  = "GET $path HTTP/1.1\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "User-Agent:  \t$bland_useragent\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print_sane "test_get_11_headercontinuation_kind_unfold_sst() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print_sane "test_get_11_headercontinuation_kind_unfold_sst() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print_sane "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
+  }
+
+  # get test, ignore
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
+
+  return $sigref;
+}
+
+sub test_get_11_headercontinuation_kind_unfold_sss()
+{
+  # HTTP/1.1 fun with header continuation, unfolded by proxy to "   "
+
+  # kind variant - folds User-Agent header
+  my $request  = "GET $path HTTP/1.1\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "User-Agent:   $bland_useragent\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print_sane "test_get_11_headercontinuation_kind_unfold_sss() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print_sane "test_get_11_headercontinuation_kind_unfold_sss() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print_sane "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
+  }
+
+  # get test, ignore
   if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
 
   return $sigref;
@@ -1258,7 +1341,79 @@ sub test_get_11_headercontinuation()
     $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
 
-  # irrelevant
+  # get test, ignore
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
+
+  return $sigref;
+}
+
+sub test_get_11_headercontinuation_unfold_sst()
+{
+  # HTTP/1.1 fun with header continuation, unfolded by proxy to "  \t"
+  my $request  = "GET $path HTTP/1.1\r\n";
+     $request .= "Host:  \t$host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print_sane "test_get_11_headercontinuation_unfold_sst() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print_sane "test_get_11_headercontinuation_unfold_sst() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print_sane "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
+  }
+
+  # get test, ignore
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
+
+  return $sigref;
+}
+
+sub test_get_11_headercontinuation_unfold_sss()
+{
+  # HTTP/1.1 fun with header continuation, unfolded by proxy to "   "
+  my $request  = "GET $path HTTP/1.1\r\n";
+     $request .= "Host:   $host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "\r\n";
+
+  if ($debug) { print_sane "test_get_11_headercontinuation_unfold_sss() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print_sane "test_get_11_headercontinuation_unfold_sss() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print_sane "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
+  }
+
+  # get test, ignore
   if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
 
   return $sigref;
@@ -1359,7 +1514,7 @@ sub test_get_12_knowngood()
     $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
 
-  # irrelevant
+  # get test, ignore
   if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
 
   return $sigref;
@@ -1469,7 +1624,7 @@ sub test_get_20_knowngood()
     $signature{'http_unexpected_keepalive'} = 1;
   }
 
-  # irrelevant
+  # get test, ignore
   if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
 
   return $sigref;
@@ -1506,8 +1661,8 @@ sub test_get_11_knowngood_percentzero()
     $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
   }
 
-  # the 99.9% case - we don't want this to signal a likeness
-  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; } else { $signature{'no_response_body'} = 1; }
+  # get test, ignore
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
 
   return $sigref;
 }
