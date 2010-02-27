@@ -359,6 +359,9 @@ if ($matchsigs)
     OVERLAY: foreach my $overlaytomatch (keys %overlays)
     {
       my @opaquetests;
+      my %olfirstclass = %firstclasstests;
+      my %olsecondclass = %secondclasstests;
+
       # matching phase 1: check overlay->{'fixed_responses'}
       my $overlay = $overlays{$overlaytomatch};
       if (defined ($overlay->{'fixed_responses'}))
@@ -431,6 +434,7 @@ if ($matchsigs)
           my $sig2;
           if (ref($cleaned->{$sigpart}) eq 'HASH')
           {
+            promote_test($cleaned->{$sigpart}->{'like'}, \%olfirstclass, \%olsecondclass); # promote referred test
             # merge and compare
             $sig2 = deref_sig ($cleaned->{$sigpart}->{'like'}, \%testresults);
             my $likehash = $cleaned->{$sigpart};
@@ -444,6 +448,7 @@ if ($matchsigs)
           }
           else
           {
+            promote_test($cleaned->{$sigpart}, \%olfirstclass, \%olsecondclass); # promote referred test
             $sig2 = deref_sig ($cleaned->{$sigpart}, \%testresults);
             $overlayscores{$overlaytomatch} += compare_sigs ($sig1, $sig2);
           }
@@ -483,6 +488,11 @@ if ($matchsigs)
       foreach my $key (@opaquetests)
       {
         del_testresult ($key, \%visibletest);
+
+	# hide opaque tests
+	delete $olfirstclass{$key};
+	# promote a test for each hidden by the overlay
+	promote_first_test (\%olfirstclass, \%olsecondclass);
       }
 
       # - copy %matchresults, transform according to $overlay->{'fixed_backend_conditional'} and $overlay->{'modified_responses'}
@@ -633,9 +643,9 @@ if ($matchsigs)
 
       # - run the matching code on our temporary copies
       match_sigtree(\%visibletest, \%visiblematch, \%matchscores, \%maxscores, [ $overlayscores{$overlaytomatch}, $overlaymaxes{$overlaytomatch}, $overlaytomatch ],
-                    \%firstclasstests, \%secondclasstests);
+                    \%olfirstclass, \%olsecondclass);
 
-      # * phase 99, in the future: stacked overlays
+      # * phase 99, in the future: stacked overlays - we're not too far off now, actually.
 
     } # foreach overlay
   }
@@ -729,6 +739,44 @@ sub deref_sig
     $tmpsig = $signature->{$sigkeyname};
   }
   return $tmpsig;
+}
+
+sub promote_test
+{
+  my $testname = $_[0];
+  my $firstclassref = $_[1];
+  my $secondclassref = $_[2];
+
+  if (defined $firstclassref->{$testname} && $firstclassref->{$testname} == 1)
+  {
+    print_sane ("promote_test: $testname already first class\n") if ($debug);
+    return;
+  }
+  if (defined $secondclassref->{$testname} && $secondclassref->{$testname} == 1)
+  {
+    $firstclassref->{$testname} = 1;
+    delete $secondclassref->{$testname};
+    print_sane ("promote_test: $testname promoted second=>first class\n") if ($debug);
+    return;
+  }
+  print_sane ("promote_test: $testname not found\n") if ($debug);
+}
+
+sub promote_first_test
+{
+  my $firstclassref = $_[0];
+  my $secondclassref = $_[1];
+
+  if (keys %$secondclassref > 0)
+  {
+    my @secondclasscitizens = sort keys %$secondclassref;
+    print_sane("promote_first_test: promoting $secondclasscitizens[0]\n") if $debug;
+    promote_test ($secondclasscitizens[0], $firstclassref, $secondclassref);
+  }
+  else
+  {
+    print_sane("promote_first_test: secondclassref empty, running out of visibility\n") if $debug;
+  }  
 }
 
 ## signature matching helpers
