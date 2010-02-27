@@ -350,7 +350,7 @@ if ($matchsigs)
   my %overlayscores;
   my %overlaymaxes;
 
-  match_sigtree(\%testresults, \%matchresults, \%matchscores, \%maxscores);
+  match_sigtree(\%testresults, \%matchresults, \%matchscores, \%maxscores, undef, \%firstclasstests, \%secondclasstests);
 
   if ($overlaydir)
   {
@@ -632,7 +632,8 @@ if ($matchsigs)
       }
 
       # - run the matching code on our temporary copies
-      match_sigtree(\%visibletest, \%visiblematch, \%matchscores, \%maxscores, $overlayscores{$overlaytomatch}, $overlaymaxes{$overlaytomatch}, $overlaytomatch);
+      match_sigtree(\%visibletest, \%visiblematch, \%matchscores, \%maxscores, [ $overlayscores{$overlaytomatch}, $overlaymaxes{$overlaytomatch}, $overlaytomatch ],
+                    \%firstclasstests, \%secondclasstests);
 
       # * phase 99, in the future: stacked overlays
 
@@ -741,9 +742,17 @@ sub match_sigtree
   my %matchresults = %$matchref;
   my $matchscoreref = $_[2];
   my $maxscoreref = $_[3];
-  my $ol_addscore = $_[4]; unless (defined $ol_addscore) { $ol_addscore = 0; }
-  my $ol_addmax = $_[5]; unless (defined $ol_addmax) { $ol_addmax = 0; }
-  my $ol_prefix = $_[6];
+  my $olinfo_ref = $_[4];
+  my @olinfo; @olinfo = @$olinfo_ref if defined $olinfo_ref;
+  my $firstclassref = $_[5];
+  my %firstclass = %$firstclassref;
+  my $secondclassref = $_[6];
+  my %secondclass = %$secondclassref;
+
+  # overlay stuff
+  my $ol_addscore = $olinfo[0]; unless (defined $ol_addscore) { $ol_addscore = 0; }
+  my $ol_addmax = $olinfo[1]; unless (defined $ol_addmax) { $ol_addmax = 0; }
+  my $ol_prefix = $olinfo[2];
   if (defined $ol_prefix) { $ol_prefix = $ol_prefix . ' => ' ; }
   else { $ol_prefix = ""; }
 
@@ -751,16 +760,21 @@ sub match_sigtree
   {
     if ( eq_deeply(\%testresults, $matchresults{$sigtomatch}) )
     {
-      $matchscoreref->{$ol_prefix . $sigtomatch} = (100 * keys %testresults) + $ol_addscore;
-      $maxscoreref->{$ol_prefix . $sigtomatch} = (100 * keys %testresults) + $ol_addmax;
+      $matchscoreref->{$ol_prefix . $sigtomatch} = (100 * keys %firstclass) + $ol_addscore;
+      $maxscoreref->{$ol_prefix . $sigtomatch} = (100 * keys %firstclass) + $ol_addmax;
       delete $matchresults{$sigtomatch};
     }
   }
   foreach my $sigtomatch (keys %matchresults)
   {
     print_sane "fuzzy matching: comparing to $sigtomatch\n" if ($debug);
+
+SIGPART:
     foreach my $sigpart (keys %testresults)
     {
+      # match only first-class test signatures to begin with
+      next SIGPART unless ($firstclass{$sigpart}) ;
+
       my $sig1 = deref_sig ($sigpart, \%testresults);
       my $sig2 = deref_sig ($sigpart, $matchresults{$sigtomatch});
 
@@ -776,7 +790,7 @@ sub match_sigtree
         if ($score > 0) { $matchscoreref->{$ol_prefix . $sigtomatch} += $score; }
       }
     }
-    $maxscoreref->{$ol_prefix . $sigtomatch} = 100 * keys %testresults if ($matchscoreref->{$ol_prefix . $sigtomatch} and $matchscoreref->{$ol_prefix . $sigtomatch} > 0);
+    $maxscoreref->{$ol_prefix . $sigtomatch} = 100 * keys %firstclass if ($matchscoreref->{$ol_prefix . $sigtomatch} and $matchscoreref->{$ol_prefix . $sigtomatch} > 0);
     print_sane "fuzzy matching: total score " . $matchscoreref->{$ol_prefix . $sigtomatch} . "\n" if ($matchscoreref->{$ol_prefix . $sigtomatch} and $matchscoreref->{$ol_prefix . $sigtomatch} > 0 and $debug);
 
     $maxscoreref->{$ol_prefix . $sigtomatch} += $ol_addmax if ($matchscoreref->{$ol_prefix . $sigtomatch} and $matchscoreref->{$ol_prefix . $sigtomatch} > 0);
