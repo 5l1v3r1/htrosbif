@@ -515,7 +515,10 @@ if ($matchsigs)
 	# hide opaque tests
 	delete $olfirstclass{$key};
 	delete $olsecondclass{$key};
-	# promote a test for each hidden by the overlay
+      }
+
+      while ((keys %olsecondclass > 0) and (keys %olfirstclass < keys %firstclasstests )) {
+	# promote a test for each hidden by the overlay and not replaced
 	promote_first_test (\%olfirstclass, \%olsecondclass);
       }
 
