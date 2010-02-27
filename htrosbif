@@ -278,6 +278,26 @@ if ($overlaydir)
   if ($verbose) { print_sane keys (%overlays) . " overlays loaded.\n" ; }
 }
 
+classify_test('get_10_knowngood', 1);
+classify_test('get_11_knowngood', 1);
+classify_test('get_09_knowngood', 1);
+classify_test('options_11_star', 1);
+classify_test('options_11_knowngood', 1);
+classify_test('get_12_knowngood', 1);
+classify_test('get_10_nlonly', 1);
+classify_test('get_11_headercontinuation_kind', 1);
+classify_test('get_11_headercontinuation_kind_unfold_sst', 2);
+classify_test('get_11_headercontinuation_kind_unfold_sss', 2);
+classify_test('get_11_headercontinuation', 1);
+classify_test('get_11_headercontinuation_unfold_sst', 2);
+classify_test('get_11_headercontinuation_unfold_sss', 2);
+classify_test('get_20_knowngood', 1);
+classify_test('get_10_cronly', 1);
+classify_test('getlc_10_knowngood', 1);
+classify_test('hairy_method_11_knowngood', 2);
+classify_test('doesnotexist_11_knowngood', 1);
+classify_test('get_11_knowngood_percentzero', 1);
+
 unless ($readsig)
 {
   print_sane "actively fingerprinting...\n" if ($verbose) ;
@@ -285,32 +305,32 @@ unless ($readsig)
   # is_namevhost();
 
   # friendly requests, should mostly work
-  $tmpresult = &test_get_10_knowngood(); add_testresult('get_10_knowngood', $tmpresult, 1 );
-  $tmpresult = &test_get_11_knowngood(); add_testresult('get_11_knowngood', $tmpresult, 1 );
-  $tmpresult = &test_get_09_knowngood(); add_testresult('get_09_knowngood', $tmpresult, 1 );
-  $tmpresult = &test_options_11_star(); add_testresult('options_11_star', $tmpresult, 1 );
-  $tmpresult = &test_options_11_knowngood(); add_testresult('options_11_knowngood', $tmpresult, 1 );
+  $tmpresult = &test_get_10_knowngood(); add_testresult('get_10_knowngood', $tmpresult);
+  $tmpresult = &test_get_11_knowngood(); add_testresult('get_11_knowngood', $tmpresult);
+  $tmpresult = &test_get_09_knowngood(); add_testresult('get_09_knowngood', $tmpresult);
+  $tmpresult = &test_options_11_star(); add_testresult('options_11_star', $tmpresult);
+  $tmpresult = &test_options_11_knowngood(); add_testresult('options_11_knowngood', $tmpresult);
 
   # borderline requests
-  $tmpresult = &test_get_12_knowngood(); add_testresult('get_12_knowngood', $tmpresult, 1 );
-  $tmpresult = &test_get_10_nlonly(); add_testresult('get_10_nlonly', $tmpresult, 1 );
-  $tmpresult = &test_get_11_headercontinuation_kind(); add_testresult('get_11_headercontinuation_kind', $tmpresult, 1 );
-  $tmpresult = &test_get_11_headercontinuation_kind_unfold_sst(); add_testresult('get_11_headercontinuation_kind_unfold_sst', $tmpresult, 2 );
-  $tmpresult = &test_get_11_headercontinuation_kind_unfold_sss(); add_testresult('get_11_headercontinuation_kind_unfold_sss', $tmpresult, 2 );
-  $tmpresult = &test_get_11_headercontinuation(); add_testresult('get_11_headercontinuation', $tmpresult, 1 );
-  $tmpresult = &test_get_11_headercontinuation_unfold_sst(); add_testresult('get_11_headercontinuation_unfold_sst', $tmpresult, 2 );
-  $tmpresult = &test_get_11_headercontinuation_unfold_sss(); add_testresult('get_11_headercontinuation_unfold_sss', $tmpresult, 2 );
+  $tmpresult = &test_get_12_knowngood(); add_testresult('get_12_knowngood', $tmpresult);
+  $tmpresult = &test_get_10_nlonly(); add_testresult('get_10_nlonly', $tmpresult);
+  $tmpresult = &test_get_11_headercontinuation_kind(); add_testresult('get_11_headercontinuation_kind', $tmpresult);
+  $tmpresult = &test_get_11_headercontinuation_kind_unfold_sst(); add_testresult('get_11_headercontinuation_kind_unfold_sst', $tmpresult);
+  $tmpresult = &test_get_11_headercontinuation_kind_unfold_sss(); add_testresult('get_11_headercontinuation_kind_unfold_sss', $tmpresult);
+  $tmpresult = &test_get_11_headercontinuation(); add_testresult('get_11_headercontinuation', $tmpresult);
+  $tmpresult = &test_get_11_headercontinuation_unfold_sst(); add_testresult('get_11_headercontinuation_unfold_sst', $tmpresult);
+  $tmpresult = &test_get_11_headercontinuation_unfold_sss(); add_testresult('get_11_headercontinuation_unfold_sss', $tmpresult);
 
   # error-provoking requests
-  $tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult, 1 );
-  $tmpresult = &test_get_10_cronly(); add_testresult('get_10_cronly', $tmpresult, 1 );
-  $tmpresult = &test_getlc_10_knowngood(); add_testresult('getlc_10_knowngood', $tmpresult, 1 );
+  $tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult);
+  $tmpresult = &test_get_10_cronly(); add_testresult('get_10_cronly', $tmpresult);
+  $tmpresult = &test_getlc_10_knowngood(); add_testresult('getlc_10_knowngood', $tmpresult);
 
-  $tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult, 2 );
-  $tmpresult = &test_doesnotexist_11_knowngood(); add_testresult('doesnotexist_11_knowngood', $tmpresult, 1 );
+  $tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult);
+  $tmpresult = &test_doesnotexist_11_knowngood(); add_testresult('doesnotexist_11_knowngood', $tmpresult);
 
   # evil requests
-  $tmpresult = &test_get_11_knowngood_percentzero(); add_testresult('get_11_knowngood_percentzero', $tmpresult, 1 );
+  $tmpresult = &test_get_11_knowngood_percentzero(); add_testresult('get_11_knowngood_percentzero', $tmpresult);
 
   # dump results
   if ($verbose and %testresults) {
@@ -515,16 +535,19 @@ if ($matchsigs)
             my $visiblesig = $visiblematch{$matchresult};
             foreach my $sigpart (keys %$visiblesig)
             {
-              my $tempsig = $visiblesig->{$sigpart};
+              my $tempsig = deref_sig ($sigpart, $visiblesig);
               if ($tempsig->{$condkey} and $tempsig->{$condkey} eq $condval)
               {
 		# fresh copy every time, please
-		my %replaceme = %$replacementresponse;
-		$visiblesig->{$sigpart} = \%replaceme;
+		del_testresult($sigpart, $visiblesig);
+		$visiblesig->{$sigpart} = hashem (%$replacementresponse);
                 # add response_optional bit, if it looks convenient
                 if (compare_sigs( deref_sig ($sigpart, \%visibletest), $optionalresponse) > 0)
                 {
+		  print_sane "Yup, convenient - adding $matchresult: $sigpart\n" if ($debug && $debug >= 2);
                   $tempsig = deref_sig ($sigpart, $visiblesig);
+		  $tempsig = hashem (%$tempsig);
+		  del_testresult($sigpart, $visiblesig);
                   foreach my $key (keys %$optionalresponse)
                   {
                     $tempsig->{$key} = $optionalresponse->{$key};
@@ -534,6 +557,7 @@ if ($matchsigs)
               } # if match! transform!
             } # foreach loop through signature bits
           } # foreach loop through %visiblematch
+	  debug_dump (\%visiblematch) if ($debug && $debug >= 2);
         } # foreach loop through fixed_backend_conditional
       }
 
@@ -682,11 +706,14 @@ exit(0);
 ## data handling helpers
 ############################
 
+
+# perldoc perlref - make a new hash from the parameters, and give me a reference to it
+sub hashem { +{ @_ } }
+
 sub add_testresult
 {
   my $sigkeyname = $_[0];
   my $signature  = $_[1];
-  my $testclass  = $_[2];
 
   # compress identical results into one result + references
   # max one extra level of indirection, shouldn't slow anything down
@@ -704,6 +731,12 @@ sub add_testresult
     }
   }
   $testresults{$sigkeyname} = $signature ;
+}
+
+sub classify_test
+{
+  my $sigkeyname = $_[0];
+  my $testclass = $_[1];
 
   $firstclasstests{$sigkeyname} = 1 if ($testclass == 1) ;
   $secondclasstests{$sigkeyname} = 1 if ($testclass == 2) ;
@@ -720,7 +753,8 @@ sub del_testresult
     my $tmphashref = $testresref->{$_} ;
     if ( exists $tmphashref->{'identical_to'} and $tmphashref->{'identical_to'} eq $sigkeyname )
     {
-      $testresref->{$_} = $testresref->{$sigkeyname};
+      my $ref = $testresref->{$sigkeyname};
+      $testresref->{$_} = hashem ( %$ref );
     }
   }
   delete $testresref->{$sigkeyname};
@@ -835,6 +869,7 @@ SIGPART:
       {
         my $score = compare_sigs ($sig1, $sig2);
         print_sane "fuzzy matching: partial match on $sigpart, $score points\n" if ($score > 0 and $debug);
+        print_sane "fuzzy matching: no match on $sigpart, $score points\n" if ($score == 0 and $debug);
         if ($score > 0) { $matchscoreref->{$ol_prefix . $sigtomatch} += $score; }
       }
     }
