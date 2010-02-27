@@ -27,7 +27,12 @@
       "doesnotexist_11_knowngood" : {
          "response_text" : "Not Implemented",
          "header_order" : "Content-Type,Content-Length",
-         "underscore_method_ok" : 1,
+         "response_code" : "501",
+         "http_version" : "1.0"
+      },
+      "hairy_method_11_knowngood" : {
+         "response_text" : "Not Implemented",
+         "header_order" : "Content-Type,Content-Length",
          "response_code" : "501",
          "http_version" : "1.0"
       }
@@ -82,6 +87,7 @@
       "get_10_nlonly" : "get_10_knowngood"
    },
    "modified_responses" : {
-      "superfluous_100_continue" : "delete"
+      "superfluous_100_continue" : "delete",
+      "http_unexpected_keepalive" : "may-delete"
    }
 }

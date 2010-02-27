@@ -141,6 +141,8 @@ if ($version)
   exit 0;
 }
 
+PARSEAGAIN:
+
 my $url = $ARGV[0];
 die "No url given, nothing to do. -h for help.\n" unless ($readsig || $url) ;
 my $uri;
@@ -217,6 +219,7 @@ if ($readsig)
   {
     warn ("Signature '$readsig' not readable, ignoring -r option\n");
     undef $readsig;
+    goto PARSEAGAIN;
   } else {
     undef $uri; # readsig overrides url and writesig
     undef $url;
@@ -511,6 +514,7 @@ if ($matchsigs)
 
 	# hide opaque tests
 	delete $olfirstclass{$key};
+	delete $olsecondclass{$key};
 	# promote a test for each hidden by the overlay
 	promote_first_test (\%olfirstclass, \%olsecondclass);
       }
