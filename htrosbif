@@ -256,7 +256,7 @@ if ($matchsigs)
     open SIGNAME, "<" . $signame or next SIG;
     my $sig = join '', <SIGNAME> ;
     close SIGNAME ;
-    $matchresults{ basename $signame } = eval { decode_json($sig); };
+    $matchresults{ basename $signame } = eval { JSON::XS->new->utf8->relaxed(1)->decode($sig); };
     warn ("Error parsing signature \"$signame\", skipped\n") if ($@);
     warn ($@) if ($@);
     delete $matchresults{ basename $signame } if ($@);
@@ -273,7 +273,7 @@ if ($overlaydir)
     open OVERLAY, "<" . $overlayname or next OVER;
     my $over = join '', <OVERLAY> ;
     close OVERLAY ;
-    $overlays{ basename $overlayname } = eval { decode_json($over); };
+    $overlays{ basename $overlayname } = eval { JSON::XS->new->utf8->relaxed(1)->decode($over); };
     warn ("Error parsing overlay \"$overlayname\", skipped\n") if ($@);
     warn ($@) if ($@);
     delete $overlays{ basename $overlayname } if ($@);
@@ -355,7 +355,7 @@ if ($readsig)
   open SIGNAME, "<" . $readsig or die "Can't open signature $readsig after all, strange. Aborting.\n";
   my $sig = join '', <SIGNAME> ;
   close SIGNAME ;
-  my $tmp_testresults = eval { decode_json($sig); };
+  my $tmp_testresults = eval { JSON::XS->new->utf8->relaxed(1)->decode($sig); };
   warn ("Error parsing signature \"$readsig\", skipped\n") if ($@);
   warn ($@) if ($@);
   die "Parse error.\n" if ($@);
@@ -735,7 +735,7 @@ if ($matchsigs)
 if ($writesig)
 {
   open SAVESIG, ">" . $writesig or die ("Couldn't open $writesig for writing signature: $!\n");
-  my $savesig = JSON::XS->new->pretty(1)->encode(\%testresults);
+  my $savesig = JSON::XS->new->pretty(1)->canonical(1)->encode(\%testresults);
   print SAVESIG $savesig;
   close SAVESIG;
 }
