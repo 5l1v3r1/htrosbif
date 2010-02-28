@@ -14,6 +14,7 @@ use List::MoreUtils qw(uniq);
 use Pod::Usage;
 use POSIX qw(floor);
 use Socket;
+use Storable qw(dclone);
 use Test::Deep::NoTest;
 use URI;
 
@@ -467,12 +468,14 @@ if ($matchsigs)
               next if ($key eq "like");
               $sig3{$key} = $likehash->{$key};
             }
+            print_sane ("$sigpart likeness: " . compare_sigs ($sig1, \%sig3) . "\n") if ($verbose && $debug) ;
             $overlayscores{$overlaytomatch} += compare_sigs ($sig1, \%sig3);
           }
           else
           {
             promote_test($cleaned->{$sigpart}, \%olfirstclass, \%olsecondclass); # promote referred test
             $sig2 = deref_sig ($cleaned->{$sigpart}, \%testresults);
+            print_sane ("$sigpart likeness: " . compare_sigs ($sig1, $sig2) . "\n") if ($verbose && $debug) ;
             $overlayscores{$overlaytomatch} += compare_sigs ($sig1, $sig2);
           }
         }
@@ -523,7 +526,8 @@ if ($matchsigs)
       }
 
       # - copy %matchresults, transform according to $overlay->{'fixed_backend_conditional'} and $overlay->{'modified_responses'}
-      my %visiblematch = %matchresults ;
+      my $visibleref = dclone \%matchresults;
+      my %visiblematch = %$visibleref;
 
       if (defined ($overlay->{'fixed_backend_conditional'}))
       {
@@ -705,6 +709,24 @@ if ($matchsigs)
             } # foreach loop through signature bits
           } # foreach loop through %visiblematch
         } # foreach loop through modified_responses
+      }
+
+      # requests/responses that are passed through unmolested ( varnish vcl pipe, et al )
+      if (defined ($overlay->{'passthrough_requests'}))
+      {
+        my $requesthash = $overlay->{'passthrough_requests'};
+        foreach my $request (keys %$requesthash)
+        {
+          print_sane "Passthrough request - $request\n" if $debug and $debug >= 2;
+
+          foreach my $matchresult (keys %visiblematch)
+          {
+            my $visiblesig = $visiblematch{$matchresult};
+	    my $standardsig = $matchresults{$matchresult};
+	    my $standardreq = deref_sig ($request, $standardsig) ;
+	    $visiblesig->{$request} = $standardreq;
+          }
+        }
       }
 
       # - run the matching code on our temporary copies
