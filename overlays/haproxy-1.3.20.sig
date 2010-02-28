@@ -2,7 +2,7 @@
    "fixed_responses" : {
       "get_10_cronly" : {
          "response_text" : "Bad request",
-         "header_order" : "Connection,Content-Type",
+         "header_order" : "Connection,Content-type",
          "response_code" : "400",
          "http_version" : "1.0"
       }
@@ -14,7 +14,7 @@
          },
          "response" : {
             "response_text" : "Bad Gateway",
-            "header_order" : "Connection,Content-Type",
+            "header_order" : "Connection,Content-type",
             "response_code" : "502",
             "http_version" : "1.0"
          },

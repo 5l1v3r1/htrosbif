@@ -3,20 +3,20 @@
       "get_09_knowngood" : {
          "http09_needcrlfcrlf" : 1,
          "response_text" : "Not Implemented",
-         "header_order" : "Content-Type,Content-Length",
+         "header_order" : "Content-type,Content-length",
          "response_code" : "501",
          "http09_returnsheaders" : 1,
          "http_version" : "1.0"
       },
       "get_12_knowngood" : {
          "response_text" : "Not Implemented",
-         "header_order" : "Content-Type,Content-Length",
+         "header_order" : "Content-type,Content-length",
          "response_code" : "501",
          "http_version" : "1.0"
       },
       "get_20_knowngood" : {
          "response_text" : "Not Implemented",
-         "header_order" : "Content-Type,Content-Length",
+         "header_order" : "Content-type,Content-length",
          "response_code" : "501",
          "http_version" : "1.0"
       },
@@ -26,13 +26,13 @@
       },
       "doesnotexist_11_knowngood" : {
          "response_text" : "Not Implemented",
-         "header_order" : "Content-Type,Content-Length",
+         "header_order" : "Content-type,Content-length",
          "response_code" : "501",
          "http_version" : "1.0"
       },
       "hairy_method_11_knowngood" : {
          "response_text" : "Not Implemented",
-         "header_order" : "Content-Type,Content-Length",
+         "header_order" : "Content-type,Content-length",
          "response_code" : "501",
          "http_version" : "1.0"
       }
@@ -40,14 +40,14 @@
    "optional_responses" : {
       "options_11_knowngood" : {
          "response_text" : "Not Implemented",
-         "header_order" : "Content-Type,Content-Length",
+         "header_order" : "Content-type,Content-length",
          "response_code" : "501",
          "http_version" : "1.0",
          "response_body" : 1
       },
       "options_11_star" : {
          "response_text" : "Not Implemented",
-         "header_order" : "Content-Type,Content-Length",
+         "header_order" : "Content-type,Content-length",
          "response_code" : "501",
          "http_version" : "1.0",
          "response_body" : 1
@@ -60,7 +60,7 @@
          },
          "response" : {
             "response_text" : "Internal Server Error",
-            "header_order" : "Content-Type,Content-Length",
+            "header_order" : "Content-type,Content-length",
             "response_code" : "500",
             "http_version" : "1.0"
          },
@@ -74,7 +74,7 @@
          },
          "response" : {
             "response_text" : "Internal Server Error",
-            "header_order" : "Content-Type,Content-Length",
+            "header_order" : "Content-type,Content-length",
             "response_code" : "500",
             "http_version" : "1.0"
          },

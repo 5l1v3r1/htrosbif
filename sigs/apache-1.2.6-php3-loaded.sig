@@ -10,7 +10,7 @@
       "does_keepalive" : 1
    },
    "get_10_knowngood" : {
-      "header_order" : "Date,Server,Last-Modified,ETag,Content-Length,Accept-Ranges,Connection,Content-Type",
+      "header_order" : "Date,Server,Last-modified,Etag,Content-length,Accept-ranges,Connection,Content-type",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"
@@ -40,7 +40,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "get_11_knowngood_percentzero" : {
-      "header_order" : "Date,Server,Connection,Transfer-Encoding,Content-Type",
+      "header_order" : "Date,Server,Connection,Transfer-encoding,Content-type",
       "http_version" : "1.1",
       "response_code" : "400",
       "response_text" : "Bad Request"
@@ -53,28 +53,28 @@
    },
    "getlc_10_knowngood" : {
       "allow_order" : "GET,HEAD,POST,PUT,DELETE,OPTIONS,TRACE",
-      "header_order" : "Date,Server,Allow,Connection,Content-Type",
+      "header_order" : "Date,Server,Allow,Connection,Content-type",
       "http_version" : "1.1",
       "response_code" : "501",
       "response_text" : "Method Not Implemented"
    },
    "hairy_method_11_knowngood" : {
       "allow_order" : "GET,HEAD,POST,PUT,DELETE,OPTIONS,TRACE",
-      "header_order" : "Date,Server,Allow,Connection,Transfer-Encoding,Content-Type",
+      "header_order" : "Date,Server,Allow,Connection,Transfer-encoding,Content-type",
       "http_version" : "1.1",
       "response_code" : "501",
       "response_text" : "Method Not Implemented"
    },
    "options_11_knowngood" : {
       "allow_order" : "GET,HEAD,POST,PUT,DELETE,OPTIONS,TRACE",
-      "header_order" : "Date,Server,Content-Length,Allow,Connection",
+      "header_order" : "Date,Server,Content-length,Allow,Connection",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"
    },
    "options_11_star" : {
       "allow_order" : "GET,HEAD,OPTIONS,TRACE",
-      "header_order" : "Date,Server,Content-Length,Allow,Connection",
+      "header_order" : "Date,Server,Content-length,Allow,Connection",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"

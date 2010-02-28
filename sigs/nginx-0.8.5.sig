@@ -9,7 +9,7 @@
       "identical_to" : "options_11_star"
    },
    "get_10_knowngood" : {
-      "header_order" : "Server,Date,Content-Type,Content-Length,Last-Modified,Connection,Accept-Ranges",
+      "header_order" : "Server,Date,Content-type,Content-length,Last-modified,Connection,Accept-ranges",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"
@@ -18,7 +18,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "get_11_headercontinuation" : {
-      "header_order" : "Server,Date,Content-Type,Content-Length,Connection",
+      "header_order" : "Server,Date,Content-type,Content-length,Connection",
       "http_version" : "1.1",
       "response_code" : "400",
       "response_text" : "Bad Request"
@@ -54,13 +54,13 @@
       "identical_to" : "options_11_star"
    },
    "hairy_method_11_knowngood" : {
-      "header_order" : "Server,Date,Content-Type,Content-Length,Connection",
+      "header_order" : "Server,Date,Content-type,Content-length,Connection",
       "http_version" : "1.1",
       "response_code" : "405",
       "response_text" : "Not Allowed"
    },
    "options_11_knowngood" : {
-      "header_order" : "Server,Date,Content-Type,Content-Length,Connection",
+      "header_order" : "Server,Date,Content-type,Content-length,Connection",
       "http_version" : "1.1",
       "response_body" : 1,
       "response_code" : "405",

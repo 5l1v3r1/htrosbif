@@ -10,7 +10,7 @@
       "does_keepalive" : 1
    },
    "get_10_knowngood" : {
-      "header_order" : "Date,Server,Content-Length,Last-Modified,Content-Type",
+      "header_order" : "Date,Server,Content-length,Last-modified,Content-type",
       "http_version" : "1.0",
       "response_code" : "200",
       "response_text" : "OK"
@@ -49,7 +49,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "getlc_10_knowngood" : {
-      "header_order" : "Date,Server,Content-Type",
+      "header_order" : "Date,Server,Content-type",
       "http_version" : "1.0",
       "response_code" : "400",
       "response_text" : "Bad Request"
@@ -61,7 +61,7 @@
       "identical_to" : "options_11_star"
    },
    "options_11_star" : {
-      "header_order" : "Date,Server,Content-Type",
+      "header_order" : "Date,Server,Content-type",
       "http_version" : "1.0",
       "response_body" : 1,
       "response_code" : "400",

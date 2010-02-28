@@ -11,7 +11,7 @@
          },
          "response" : {
             "response_text" : "Service Unavailable",
-            "header_order" : "Server,Retry-After,Content-Type,Content-Length,Date,Connection",
+            "header_order" : "Server,Retry-after,Content-type,Content-length,Date,Connection",
             "response_code" : "503",
             "http_version" : "1.1"
          },
@@ -25,7 +25,7 @@
          },
          "response" : {
             "response_text" : "Service Unavailable",
-            "header_order" : "Server,Retry-After,Content-Type,Content-Length,Date,Connection",
+            "header_order" : "Server,Retry-after,Content-type,Content-length,Date,Connection",
             "response_code" : "503",
             "http_version" : "1.1"
          },
@@ -39,7 +39,7 @@
          },
          "response" : {
             "response_text" : "Service Unavailable",
-            "header_order" : "Server,Retry-After,Content-Type,Content-Length,Date,Connection",
+            "header_order" : "Server,Retry-after,Content-type,Content-length,Date,Connection",
             "response_code" : "503",
             "http_version" : "1.1"
          },
@@ -69,8 +69,8 @@
    },
    "modified_responses" : {
       "header_order" : {
-         "strips" : "Accept-Ranges,Transfer-Encoding,Content-Length,Date,Connection",
-         "appends" : "Content-Length,Date,Connection"
+         "strips" : "Accept-ranges,Transfer-encoding,Content-length,Date,Connection",
+         "appends" : "Content-length,Date,Connection"
       },
       "keepalive_header_without_conntoken" : "may-add"
    }

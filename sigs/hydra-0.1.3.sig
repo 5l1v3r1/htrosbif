@@ -10,7 +10,7 @@
       "does_keepalive" : 1
    },
    "get_10_knowngood" : {
-      "header_order" : "Date,Server,Accept-Ranges,Connection,Content-Length,Last-Modified,ETag,Content-Type",
+      "header_order" : "Date,Server,Accept-ranges,Connection,Content-length,Last-modified,Etag,Content-type",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"
@@ -40,7 +40,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "get_11_knowngood_percentzero" : {
-      "header_order" : "Date,Server,Accept-Ranges,Connection,Content-Type",
+      "header_order" : "Date,Server,Accept-ranges,Connection,Content-type",
       "http_version" : "1.1",
       "response_code" : "400",
       "response_text" : "Bad Request"

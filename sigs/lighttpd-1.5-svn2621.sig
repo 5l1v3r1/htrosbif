@@ -13,7 +13,7 @@
       "identical_to" : "get_11_headercontinuation_kind"
    },
    "get_10_knowngood" : {
-      "header_order" : "Content-Type,ETag,Accept-Ranges,Last-Modified,Content-Length,Connection,Date,Server",
+      "header_order" : "Content-type,Etag,Accept-ranges,Last-modified,Content-length,Connection,Date,Server",
       "http_version" : "1.0",
       "response_code" : "200",
       "response_text" : "OK"
@@ -43,19 +43,19 @@
       "identical_to" : "get_11_knowngood"
    },
    "get_11_knowngood" : {
-      "header_order" : "Content-Type,ETag,Accept-Ranges,Last-Modified,Content-Length,Connection,Date,Server",
+      "header_order" : "Content-type,Etag,Accept-ranges,Last-modified,Content-length,Connection,Date,Server",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"
    },
    "get_11_knowngood_percentzero" : {
-      "header_order" : "Content-Type,Content-Length,Connection,Date,Server",
+      "header_order" : "Content-type,Content-length,Connection,Date,Server",
       "http_version" : "1.1",
       "response_code" : "404",
       "response_text" : "Not Found"
    },
    "get_12_knowngood" : {
-      "header_order" : "Content-Type,Content-Length,Connection,Date,Server",
+      "header_order" : "Content-type,Content-length,Connection,Date,Server",
       "http_version" : "1.0",
       "response_code" : "505",
       "response_text" : "HTTP Version Not Supported"
@@ -64,7 +64,7 @@
       "identical_to" : "get_12_knowngood"
    },
    "getlc_10_knowngood" : {
-      "header_order" : "Content-Type,Content-Length,Connection,Date,Server",
+      "header_order" : "Content-type,Content-length,Connection,Date,Server",
       "http_version" : "1.0",
       "response_code" : "501",
       "response_text" : "Not Implemented"
@@ -77,7 +77,7 @@
    },
    "options_11_star" : {
       "allow_order" : "OPTIONS,GET,HEAD,POST",
-      "header_order" : "Allow,Content-Length,Connection,Date,Server",
+      "header_order" : "Allow,Content-length,Connection,Date,Server",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"

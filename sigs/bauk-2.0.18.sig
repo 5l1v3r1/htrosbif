@@ -4,7 +4,7 @@
    },
    "get_09_knowngood" : {
       "forced_keepalive" : 1,
-      "header_order" : "Server,Accept-Ranges,Connection,Date,Content-Type,Content-Length,Last-Modified,ETag",
+      "header_order" : "Server,Accept-ranges,Connection,Date,Content-type,Content-length,Last-modified,Etag",
       "http09_needcrlfcrlf" : 1,
       "http09_returnsheaders" : 1,
       "http_unexpected_keepalive" : 1,
@@ -18,7 +18,7 @@
    },
    "get_10_knowngood" : {
       "forced_keepalive" : 1,
-      "header_order" : "Server,Accept-Ranges,Connection,Date,Content-Type,Content-Length,Last-Modified,ETag",
+      "header_order" : "Server,Accept-ranges,Connection,Date,Content-type,Content-length,Last-modified,Etag",
       "http_unexpected_keepalive" : 1,
       "http_version" : "1.1",
       "response_code" : "200",
@@ -47,7 +47,7 @@
    },
    "get_11_knowngood" : {
       "forced_keepalive" : 1,
-      "header_order" : "Server,Accept-Ranges,Connection,Date,Content-Type,Content-Length,Last-Modified,ETag",
+      "header_order" : "Server,Accept-ranges,Connection,Date,Content-type,Content-length,Last-modified,Etag",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"
@@ -64,7 +64,7 @@
    "getlc_10_knowngood" : {
       "allow_order" : "GET,HEAD,POST",
       "forced_keepalive" : 1,
-      "header_order" : "Server,Accept-Ranges,Connection,Date,Allow,Content-Length,Content-Type",
+      "header_order" : "Server,Accept-ranges,Connection,Date,Allow,Content-length,Content-type",
       "http_unexpected_keepalive" : 1,
       "http_version" : "1.1",
       "response_code" : "405",
@@ -73,7 +73,7 @@
    "hairy_method_11_knowngood" : {
       "allow_order" : "GET,HEAD,POST",
       "forced_keepalive" : 1,
-      "header_order" : "Server,Accept-Ranges,Connection,Date,Allow,Content-Length,Content-Type",
+      "header_order" : "Server,Accept-ranges,Connection,Date,Allow,Content-length,Content-type",
       "http_version" : "1.1",
       "response_code" : "405",
       "response_text" : "Method Not Allowed"
@@ -84,7 +84,7 @@
    "options_11_star" : {
       "allow_order" : "GET,HEAD,POST",
       "forced_keepalive" : 1,
-      "header_order" : "Server,Accept-Ranges,Connection,Date,Allow,Content-Length,Content-Type",
+      "header_order" : "Server,Accept-ranges,Connection,Date,Allow,Content-length,Content-type",
       "http_version" : "1.1",
       "response_body" : 1,
       "response_code" : "405",

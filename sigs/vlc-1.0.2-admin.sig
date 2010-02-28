@@ -10,7 +10,7 @@
       "delayed_reply" : 1
    },
    "get_10_knowngood" : {
-      "header_order" : "Content-type,Content-Length",
+      "header_order" : "Content-type,Content-length",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"
@@ -37,13 +37,13 @@
       "identical_to" : "get_11_knowngood"
    },
    "get_11_knowngood" : {
-      "header_order" : "Content-type,Connection,Content-Length",
+      "header_order" : "Content-type,Connection,Content-length",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"
    },
    "get_11_knowngood_percentzero" : {
-      "header_order" : "Content-Length,Content-Type",
+      "header_order" : "Content-length,Content-type",
       "http_version" : "1.0",
       "response_code" : "404",
       "response_text" : "Not found"
@@ -57,7 +57,7 @@
       "response_text" : "Unknown HTTP version"
    },
    "getlc_10_knowngood" : {
-      "header_order" : "Content-Length",
+      "header_order" : "Content-length",
       "http_version" : "1.0",
       "response_code" : "501",
       "response_text" : "Not implemented"
@@ -69,7 +69,7 @@
       "identical_to" : "options_11_star"
    },
    "options_11_star" : {
-      "header_order" : "Content-Length",
+      "header_order" : "Content-length",
       "http_version" : "1.0",
       "response_body" : 1,
       "response_code" : "501",

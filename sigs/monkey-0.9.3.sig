@@ -3,7 +3,7 @@
       "identical_to" : "getlc_10_knowngood"
    },
    "get_09_knowngood" : {
-      "header_order" : "Server,Date,Connection,Content-Type,Accept-Ranges",
+      "header_order" : "Server,Date,Connection,Content-type,Accept-ranges",
       "http09_returnsheaders" : 1,
       "http_version" : "1.1",
       "response_code" : "400",
@@ -15,7 +15,7 @@
    },
    "get_10_knowngood" : {
       "forced_keepalive" : 1,
-      "header_order" : "Server,Date,Last-Modified,Connection,Content-Type,Accept-Ranges,Content-Length",
+      "header_order" : "Server,Date,Last-modified,Connection,Content-type,Accept-ranges,Content-length",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"
@@ -54,7 +54,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "getlc_10_knowngood" : {
-      "header_order" : "Server,Date,Connection,Content-Type,Accept-Ranges",
+      "header_order" : "Server,Date,Connection,Content-type,Accept-ranges",
       "http_version" : "1.1",
       "response_code" : "405",
       "response_text" : "Method Not Allowed"
@@ -63,14 +63,14 @@
       "identical_to" : "getlc_10_knowngood"
    },
    "options_11_knowngood" : {
-      "header_order" : "Server,Date,Connection,Content-Type,Accept-Ranges",
+      "header_order" : "Server,Date,Connection,Content-type,Accept-ranges",
       "http_version" : "1.1",
       "response_body" : 1,
       "response_code" : "405",
       "response_text" : "Method Not Allowed"
    },
    "options_11_star" : {
-      "header_order" : "Server,Date,Connection,Content-Type,Accept-Ranges",
+      "header_order" : "Server,Date,Connection,Content-type,Accept-ranges",
       "http_version" : "1.1",
       "response_body" : 1,
       "response_code" : "403",

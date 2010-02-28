@@ -10,7 +10,7 @@
       "does_keepalive" : 1
    },
    "get_10_knowngood" : {
-      "header_order" : "Server,Accept-Ranges,ETag,Last-Modified,Content-Type,Content-Length,Date,Connection",
+      "header_order" : "Server,Accept-ranges,Etag,Last-modified,Content-type,Content-length,Date,Connection",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"
@@ -40,7 +40,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "get_11_knowngood_percentzero" : {
-      "header_order" : "Server,Content-Length,Date,Connection",
+      "header_order" : "Server,Content-length,Date,Connection",
       "http_version" : "1.1",
       "response_code" : "400",
       "response_text" : "Bad Request"
@@ -55,7 +55,7 @@
       "identical_to" : "get_12_knowngood"
    },
    "getlc_10_knowngood" : {
-      "header_order" : "Server,Content-Type,Content-Length,Date,Connection",
+      "header_order" : "Server,Content-type,Content-length,Date,Connection",
       "http_version" : "1.1",
       "response_code" : "501",
       "response_text" : "Not Implemented"
@@ -68,7 +68,7 @@
    },
    "options_11_star" : {
       "allow_order" : "GET,HEAD,POST,PUT,DELETE,OPTIONS",
-      "header_order" : "Server,Allow,Content-Length,Date,Connection",
+      "header_order" : "Server,Allow,Content-length,Date,Connection",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"

@@ -1,6 +1,6 @@
 {
    "doesnotexist_11_knowngood" : {
-      "header_order" : "Server,Date,Content-Type,Content-Length",
+      "header_order" : "Server,Date,Content-type,Content-length",
       "http_version" : "1.0",
       "response_code" : "400",
       "response_text" : "Invalid request \"DOESNOTEXIST / HTTP/1.1\" (unknown method)"
@@ -13,7 +13,7 @@
       "does_keepalive" : 1
    },
    "get_10_knowngood" : {
-      "header_order" : "Server,Date,Content-Type,Content-Length,Last-Modified",
+      "header_order" : "Server,Date,Content-type,Content-length,Last-modified",
       "http_version" : "1.0",
       "response_code" : "200",
       "response_text" : "Document follows"
@@ -52,26 +52,26 @@
       "identical_to" : "get_10_knowngood"
    },
    "getlc_10_knowngood" : {
-      "header_order" : "Server,Date,Content-Type,Content-Length",
+      "header_order" : "Server,Date,Content-type,Content-length",
       "http_version" : "1.0",
       "response_code" : "400",
       "response_text" : "Invalid request \"get / HTTP/1.0\" (unknown method)"
    },
    "hairy_method_11_knowngood" : {
-      "header_order" : "Server,Date,Content-Type,Content-Length",
+      "header_order" : "Server,Date,Content-type,Content-length",
       "http_version" : "1.0",
       "response_code" : "400",
       "response_text" : "Invalid request \"HAIRY_METHOD / HTTP/1.1\" (unknown method)"
    },
    "options_11_knowngood" : {
-      "header_order" : "Server,Date,Content-Type,Content-Length",
+      "header_order" : "Server,Date,Content-type,Content-length",
       "http_version" : "1.0",
       "response_body" : 1,
       "response_code" : "400",
       "response_text" : "Invalid request \"OPTIONS / HTTP/1.1\" (unknown method)"
    },
    "options_11_star" : {
-      "header_order" : "Server,Date,Content-Type,Content-Length",
+      "header_order" : "Server,Date,Content-type,Content-length",
       "http_version" : "1.0",
       "response_body" : 1,
       "response_code" : "400",

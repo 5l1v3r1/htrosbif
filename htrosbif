@@ -2050,7 +2050,7 @@ sub classify_signature()
     # read headers, ignore 100 continue headers
     if ($line =~ /^([^\s<>]+)( ?):( ?)(.*)/ and exists $signature{'http'})
     {
-      my $hname = $1 ;
+      my $hname = ucfirst lc $1 ; # Standardize header name to Header-name: form
       my $hcontent = $4 ;
       push @headers, $hname ;
       unless ($2 eq "") {

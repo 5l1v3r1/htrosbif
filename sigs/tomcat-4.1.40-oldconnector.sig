@@ -10,7 +10,7 @@
       "does_keepalive" : 1
    },
    "get_10_knowngood" : {
-      "header_order" : "Content-Type,Date,Connection,Server",
+      "header_order" : "Content-type,Date,Connection,Server",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"
@@ -40,7 +40,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "get_11_knowngood_percentzero" : {
-      "header_order" : "Content-Type,Date,Connection,Server",
+      "header_order" : "Content-type,Date,Connection,Server",
       "http_version" : "1.1",
       "response_code" : "500",
       "response_text" : "Internal Server Error"
@@ -58,7 +58,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "options_11_knowngood" : {
-      "header_order" : "Content-Type,Date,Connection,Server",
+      "header_order" : "Content-type,Date,Connection,Server",
       "http_version" : "1.1",
       "response_body" : 1,
       "response_code" : "200",
@@ -66,7 +66,7 @@
    },
    "options_11_star" : {
       "allow_order" : "GET,HEAD,POST,PUT,DELETE,TRACE,OPTIONS",
-      "header_order" : "Content-Length,Date,Allow,Connection,Server",
+      "header_order" : "Content-length,Date,Allow,Connection,Server",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"

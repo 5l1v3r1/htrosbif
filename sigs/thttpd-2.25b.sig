@@ -9,7 +9,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "get_10_knowngood" : {
-      "header_order" : "Server,Content-Type,Date,Last-Modified,Accept-Ranges,Connection",
+      "header_order" : "Server,Content-type,Date,Last-modified,Accept-ranges,Connection",
       "http_version" : "1.0",
       "response_code" : "200",
       "response_text" : "OK"
@@ -18,7 +18,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "get_11_headercontinuation" : {
-      "header_order" : "Server,Content-Type,Date,Last-Modified,Accept-Ranges,Connection",
+      "header_order" : "Server,Content-type,Date,Last-modified,Accept-ranges,Connection",
       "http_version" : "1.1",
       "response_code" : "400",
       "response_text" : "Bad Request"
@@ -39,25 +39,25 @@
       "identical_to" : "get_11_knowngood"
    },
    "get_11_knowngood" : {
-      "header_order" : "Server,Content-Type,Date,Last-Modified,Accept-Ranges,Connection",
+      "header_order" : "Server,Content-type,Date,Last-modified,Accept-ranges,Connection",
       "http_version" : "1.1",
       "response_code" : "200",
       "response_text" : "OK"
    },
    "get_11_knowngood_percentzero" : {
-      "header_order" : "Server,Content-Type,Date,Last-Modified,Accept-Ranges,Connection",
+      "header_order" : "Server,Content-type,Date,Last-modified,Accept-ranges,Connection",
       "http_version" : "1.1",
       "response_code" : "404",
       "response_text" : "Not Found"
    },
    "get_12_knowngood" : {
-      "header_order" : "Server,Content-Type,Date,Last-Modified,Accept-Ranges,Connection",
+      "header_order" : "Server,Content-type,Date,Last-modified,Accept-ranges,Connection",
       "http_version" : "1.2",
       "response_code" : "200",
       "response_text" : "OK"
    },
    "get_20_knowngood" : {
-      "header_order" : "Server,Content-Type,Date,Last-Modified,Accept-Ranges,Connection",
+      "header_order" : "Server,Content-type,Date,Last-modified,Accept-ranges,Connection",
       "http_version" : "2.0",
       "response_code" : "200",
       "response_text" : "OK"
@@ -66,20 +66,20 @@
       "identical_to" : "get_10_knowngood"
    },
    "hairy_method_11_knowngood" : {
-      "header_order" : "Server,Content-Type,Date,Last-Modified,Accept-Ranges,Connection",
+      "header_order" : "Server,Content-type,Date,Last-modified,Accept-ranges,Connection",
       "http_version" : "1.1",
       "response_code" : "501",
       "response_text" : "Not Implemented"
    },
    "options_11_knowngood" : {
-      "header_order" : "Server,Content-Type,Date,Last-Modified,Accept-Ranges,Connection",
+      "header_order" : "Server,Content-type,Date,Last-modified,Accept-ranges,Connection",
       "http_version" : "1.1",
       "response_body" : 1,
       "response_code" : "501",
       "response_text" : "Not Implemented"
    },
    "options_11_star" : {
-      "header_order" : "Server,Content-Type,Date,Last-Modified,Accept-Ranges,Connection",
+      "header_order" : "Server,Content-type,Date,Last-modified,Accept-ranges,Connection",
       "http_version" : "1.1",
       "response_body" : 1,
       "response_code" : "400",

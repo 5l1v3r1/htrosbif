@@ -3,7 +3,7 @@
       "identical_to" : "getlc_10_knowngood"
    },
    "get_09_knowngood" : {
-      "header_order" : "Last-Modified,Content-Type,Content-Length",
+      "header_order" : "Last-modified,Content-type,Content-length",
       "http09_returnsheaders" : 1,
       "http_version" : "1.0",
       "response_code" : "200",
@@ -14,7 +14,7 @@
       "does_keepalive" : 1
    },
    "get_10_knowngood" : {
-      "header_order" : "Date,Status,Servlet-Engine,Content-Type,Last-Modified,Content-Length",
+      "header_order" : "Date,Status,Servlet-engine,Content-type,Last-modified,Content-length",
       "http_version" : "1.0",
       "response_code" : "200",
       "response_text" : "OK"
@@ -44,7 +44,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "get_11_knowngood_percentzero" : {
-      "header_order" : "Date,Status,Servlet-Engine,Content-Type",
+      "header_order" : "Date,Status,Servlet-engine,Content-type",
       "http_version" : "1.0",
       "response_code" : "404",
       "response_text" : "Not Found"
@@ -56,7 +56,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "getlc_10_knowngood" : {
-      "header_order" : "Date,Status,Servlet-Engine,Content-Type",
+      "header_order" : "Date,Status,Servlet-engine,Content-type",
       "http_version" : "1.0",
       "response_code" : "501",
       "response_text" : "Not Implemented"
@@ -66,13 +66,13 @@
    },
    "options_11_knowngood" : {
       "allow_order" : "GET,HEAD,POST,TRACE,OPTIONS",
-      "header_order" : "Status,Date,Allow,Servlet-Engine,Content-Type",
+      "header_order" : "Status,Date,Allow,Servlet-engine,Content-type",
       "http_version" : "1.0",
       "response_code" : "200",
       "response_text" : "OK"
    },
    "options_11_star" : {
-      "header_order" : "Content-Type",
+      "header_order" : "Content-type",
       "http_version" : "1.0",
       "response_body" : 1,
       "response_code" : "400",
