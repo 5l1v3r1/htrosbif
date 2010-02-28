@@ -16,7 +16,7 @@ SIG: foreach my $signame (@sigs)
   open SIGNAME, "<" . $signame or next SIG;
   my $sig = join '', <SIGNAME> ;
   close SIGNAME ;
-  $matchresults{ basename $signame } = decode_json($sig);
+  $matchresults{ basename $signame } = JSON::XS->new->utf8->relaxed(1)->decode($sig);
 }
 
 sub deref_sig
@@ -44,7 +44,7 @@ sub deref_sig
       if ($sigpart eq $ARGV[0])
       {
         print "SIG: $sigtomatch\n";
-        print JSON::XS->new->pretty(1)->encode($sigref->{$sigpart}) . "\n";
+        print JSON::XS->new->pretty(1)->canonical(1)->encode($sigref->{$sigpart}) . "\n";
       }
     }
   }

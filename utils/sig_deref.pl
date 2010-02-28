@@ -22,7 +22,7 @@ SIG: foreach my $signame (@sigs)
   open SIGNAME, "<" . $signame or next SIG;
   my $sig = join '', <SIGNAME> ;
   close SIGNAME ;
-  $matchresults{ basename $signame } = decode_json($sig);
+  $matchresults{ basename $signame } = JSON::XS->new->utf8->relaxed(1)->decode($sig);
 }
 
 sub deref_sig
@@ -49,7 +49,7 @@ sub deref_sig
       $sigref->{$sigpart} = $sig1;
     }
     open SIGNAME, ">sigs.deref/" . $sigtomatch or next SIG;
-    print SIGNAME JSON::XS->new->pretty(1)->encode($sigref);
+    print SIGNAME JSON::XS->new->pretty(1)->canonical(1)->encode($sigref);
     close SIGNAME ;
   }
 

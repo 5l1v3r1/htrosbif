@@ -118,7 +118,7 @@ sub print_sane ($)
 sub debug_dump
 {
   my $hashref = $_[0];
-  print JSON::XS->new->pretty(1)->encode($hashref);
+  print JSON::XS->new->pretty(1)->canonical(1)->encode($hashref);
 }
 
 ########################
