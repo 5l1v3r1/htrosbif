@@ -943,6 +943,9 @@ SIGPART:
     $maxscoreref->{$ol_prefix . $sigtomatch} += $ol_addmax if ($matchscoreref->{$ol_prefix . $sigtomatch} and $matchscoreref->{$ol_prefix . $sigtomatch} > 0);
     $matchscoreref->{$ol_prefix . $sigtomatch} += $ol_addscore if ($matchscoreref->{$ol_prefix . $sigtomatch} and $matchscoreref->{$ol_prefix . $sigtomatch} > 0);
   }
+
+  # FIXME: if >1 perfect match, promote tests, rerun, see if differentiation improves
+  #        - for examples, see nginx, where hairy_method promotion would be good
 }
 
 sub compare_sigs
