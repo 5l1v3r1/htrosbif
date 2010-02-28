@@ -5,13 +5,7 @@ package htrosbif;
 use strict;
 
 use File::Basename;
-use Getopt::Long qw(:config no_ignore_case);
 use JSON::XS;
-use List::MoreUtils qw(uniq);
-use Pod::Usage;
-use POSIX qw(floor);
-use Test::Deep::NoTest;
-use URI;
 
 my %matchresults;
 
