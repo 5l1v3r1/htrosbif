@@ -386,6 +386,8 @@ if ($matchsigs)
       my %olfirstclass = %firstclasstests;
       my %olsecondclass = %secondclasstests;
 
+      print_sane "Overlay matching, trying: $overlaytomatch\n" if $debug;
+
       # matching phase 1: check overlay->{'fixed_responses'}
       my $overlay = $overlays{$overlaytomatch};
       if (defined ($overlay->{'fixed_responses'}))
