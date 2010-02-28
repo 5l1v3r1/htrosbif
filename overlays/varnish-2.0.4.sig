@@ -72,6 +72,9 @@
          "strips" : "Accept-ranges,Transfer-encoding,Content-length,Date,Connection",
          "appends" : "Content-length,Date,Connection"
       },
-      "keepalive_header_without_conntoken" : "may-add"
+      "keepalive_header_without_conntoken" : "may-add",
+      "forced_keepalive" : "delete",
+      "duplicate_connection_header" : "delete",
+      "duplicate_date_header" : "delete"
    }
 }
