@@ -1,73 +1,86 @@
 {
-   "get_10_knowngood" : {
-      "response_text" : "OK",
-      "header_order" : "Server,Content-Location,Date,Content-Type,Accept-Ranges,Last-Modified,ETag,Content-Length",
-      "response_code" : "200",
-      "http_version" : "1.1"
+   "doesnotexist_11_knowngood" : {
+      "identical_to" : "hairy_method_11_knowngood"
    },
    "get_09_knowngood" : {
       "http09_valid" : 1
    },
-   "get_11_knowngood_percentzero" : {
-      "response_text" : "Object Not Found",
-      "header_order" : "Server,Date,Connection,Content-Length,Content-Type",
-      "response_code" : "404",
-      "http_version" : "1.1"
+   "get_10_cronly" : {
+      "connection_closed" : 1,
+      "does_keepalive" : 1
+   },
+   "get_10_knowngood" : {
+      "header_order" : "Server,Content-location,Date,Content-type,Accept-ranges,Last-modified,Etag,Content-length",
+      "http_version" : "1.1",
+      "response_code" : "200",
+      "response_text" : "OK"
+   },
+   "get_10_nlonly" : {
+      "identical_to" : "get_10_knowngood"
    },
    "get_11_headercontinuation" : {
       "identical_to" : "get_11_knowngood"
    },
-   "getlc_10_knowngood" : {
-      "response_text" : "Not Implemented",
-      "header_order" : "Server,Date,Content-Type,Content-Length",
-      "response_code" : "501",
+   "get_11_headercontinuation_kind" : {
+      "identical_to" : "get_11_knowngood"
+   },
+   "get_11_headercontinuation_kind_unfold_sss" : {
+      "identical_to" : "get_11_knowngood"
+   },
+   "get_11_headercontinuation_kind_unfold_sst" : {
+      "identical_to" : "get_11_knowngood"
+   },
+   "get_11_headercontinuation_unfold_sss" : {
+      "identical_to" : "get_11_knowngood"
+   },
+   "get_11_headercontinuation_unfold_sst" : {
+      "identical_to" : "get_11_knowngood"
+   },
+   "get_11_knowngood" : {
+      "header_order" : "Server,Connection,Content-location,Date,Content-type,Accept-ranges,Last-modified,Etag,Content-length",
       "http_version" : "1.1",
-      "response_body" : 1
-   },
-   "doesnotexist_11_knowngood" : {
-      "response_text" : "Not Implemented",
-      "header_order" : "Server,Date,Connection,Content-Type,Content-Length",
-      "underscore_method_ok" : 1,
-      "response_code" : "501",
-      "http_version" : "1.1"
-   },
-   "options_11_star" : {
-      "response_text" : "OK",
-      "header_order" : "Server,Date,Connection,Content-Length,Accept-Ranges,DASL,DAV,Public,Allow",
-      "allow_order" : "OPTIONS,TRACE,GET,HEAD,DELETE,PUT,POST,COPY,MOVE,MKCOL,PROPFIND,PROPPATCH,LOCK,UNLOCK,SEARCH",
       "response_code" : "200",
+      "response_text" : "OK"
+   },
+   "get_11_knowngood_percentzero" : {
+      "header_order" : "Server,Date,Connection,Content-length,Content-type",
       "http_version" : "1.1",
-      "public_order" : "OPTIONS,TRACE,GET,HEAD,DELETE,PUT,POST,COPY,MOVE,MKCOL,PROPFIND,PROPPATCH,LOCK,UNLOCK,SEARCH"
+      "response_code" : "404",
+      "response_text" : "Object Not Found"
    },
    "get_12_knowngood" : {
       "identical_to" : "get_10_knowngood"
    },
-   "options_11_knowngood" : {
-      "response_text" : "OK",
-      "accept_ranges" : "none",
-      "header_order" : "Server,Date,Connection,MS-Author-Via,Content-Length,Accept-Ranges,DASL,DAV,Public,Allow",
-      "allow_order" : "OPTIONS,TRACE,GET,HEAD,COPY,PROPFIND,SEARCH,LOCK,UNLOCK",
-      "response_code" : "200",
-      "http_version" : "1.1",
-      "public_order" : "OPTIONS,TRACE,GET,HEAD,DELETE,PUT,POST,COPY,MOVE,MKCOL,PROPFIND,PROPPATCH,LOCK,UNLOCK,SEARCH"
-   },
-   "get_11_headercontinuation_kind" : {
-      "identical_to" : "get_11_knowngood"
-   },
    "get_20_knowngood" : {
       "identical_to" : "get_10_knowngood"
    },
-   "get_10_cronly" : {
-      "does_keepalive" : 1,
-      "connection_closed" : 1
+   "getlc_10_knowngood" : {
+      "header_order" : "Server,Date,Content-type,Content-length",
+      "http_version" : "1.1",
+      "response_code" : "501",
+      "response_text" : "Not Implemented"
    },
-   "get_11_knowngood" : {
-      "response_text" : "OK",
-      "header_order" : "Server,Connection,Content-Location,Date,Content-Type,Accept-Ranges,Last-Modified,ETag,Content-Length",
+   "hairy_method_11_knowngood" : {
+      "header_order" : "Server,Date,Connection,Content-type,Content-length",
+      "http_version" : "1.1",
+      "response_code" : "501",
+      "response_text" : "Not Implemented"
+   },
+   "options_11_knowngood" : {
+      "accept_ranges" : "none",
+      "allow_order" : "OPTIONS,TRACE,GET,HEAD,COPY,PROPFIND,SEARCH,LOCK,UNLOCK",
+      "header_order" : "Server,Date,Connection,Ms-author-via,Content-length,Accept-ranges,Dasl,Dav,Public,Allow",
+      "http_version" : "1.1",
+      "public_order" : "OPTIONS,TRACE,GET,HEAD,DELETE,PUT,POST,COPY,MOVE,MKCOL,PROPFIND,PROPPATCH,LOCK,UNLOCK,SEARCH",
       "response_code" : "200",
-      "http_version" : "1.1"
+      "response_text" : "OK"
    },
-   "get_10_nlonly" : {
-      "identical_to" : "get_10_knowngood"
+   "options_11_star" : {
+      "allow_order" : "OPTIONS,TRACE,GET,HEAD,DELETE,PUT,POST,COPY,MOVE,MKCOL,PROPFIND,PROPPATCH,LOCK,UNLOCK,SEARCH",
+      "header_order" : "Server,Date,Connection,Content-length,Accept-ranges,Dasl,Dav,Public,Allow",
+      "http_version" : "1.1",
+      "public_order" : "OPTIONS,TRACE,GET,HEAD,DELETE,PUT,POST,COPY,MOVE,MKCOL,PROPFIND,PROPPATCH,LOCK,UNLOCK,SEARCH",
+      "response_code" : "200",
+      "response_text" : "OK"
    }
 }
