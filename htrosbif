@@ -1069,7 +1069,8 @@ sub test_get_09_knowngood()
   my $request   = "GET $path\r\n";
   my $request2  = "GET $path\r\n\r\n";
 
-  if ($debug) { print_sane "test_get_09_knowngood() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1089,7 +1090,7 @@ sub test_get_09_knowngood()
   unless ($#data == -1)
   {
     if ($debug) {
-      print_sane "test_get_09_knowngood returned data (if any):\n" ;
+      print_sane "$me returned data (if any):\n" ;
       foreach (join '',@data) {
         print_sane "$_\n";
       }
@@ -1144,7 +1145,8 @@ buildtest:
      $request .= "User-Agent: $bland_useragent\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_get_10_knowngood() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1160,7 +1162,7 @@ buildtest:
   }
 
   if ($debug and @data) {
-    print_sane "test_get_10_knowngood() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1201,7 +1203,8 @@ sub test_get_10_nlonly()
      $request .= "User-Agent: $bland_useragent\n";
      $request .= "\n";
 
-  if ($debug) { print_sane "test_get_10_nlonly() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1222,7 +1225,7 @@ sub test_get_10_nlonly()
   }
 
   if ($debug and @data) {
-    print_sane "test_get_10_nlonly() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1249,7 +1252,8 @@ sub test_get_10_cronly()
      $request .= "User-Agent: $bland_useragent\r";
      $request .= "\r";
 
-  if ($debug) { print_sane "test_get_10_cronly() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1270,7 +1274,7 @@ sub test_get_10_cronly()
   }
 
   if ($debug and @data) {
-    print_sane "test_get_10_cronly() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1297,7 +1301,8 @@ sub test_getlc_10_knowngood()
      $request .= "User-Agent: $bland_useragent\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_getlc_10_knowngood() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1305,7 +1310,7 @@ sub test_getlc_10_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_getlc_10_knowngood() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1335,7 +1340,8 @@ sub test_get_11_knowngood()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_get_11_knowngood() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1343,7 +1349,7 @@ sub test_get_11_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_get_11_knowngood() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1376,7 +1382,8 @@ sub test_get_11_headercontinuation_kind()
      $request .= "User-Agent:\r\n\t$bland_useragent\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_get_11_headercontinuation_kind() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1384,7 +1391,7 @@ sub test_get_11_headercontinuation_kind()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_get_11_headercontinuation_kind() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1414,7 +1421,8 @@ sub test_get_11_headercontinuation_kind_unfold_sst()
      $request .= "User-Agent:  \t$bland_useragent\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_get_11_headercontinuation_kind_unfold_sst() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1422,7 +1430,7 @@ sub test_get_11_headercontinuation_kind_unfold_sst()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_get_11_headercontinuation_kind_unfold_sst() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1452,7 +1460,8 @@ sub test_get_11_headercontinuation_kind_unfold_sss()
      $request .= "User-Agent:   $bland_useragent\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_get_11_headercontinuation_kind_unfold_sss() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1460,7 +1469,7 @@ sub test_get_11_headercontinuation_kind_unfold_sss()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_get_11_headercontinuation_kind_unfold_sss() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1493,7 +1502,8 @@ sub test_get_11_headercontinuation()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_get_11_headercontinuation() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1501,7 +1511,7 @@ sub test_get_11_headercontinuation()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_get_11_headercontinuation() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1529,7 +1539,8 @@ sub test_get_11_headercontinuation_unfold_sst()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_get_11_headercontinuation_unfold_sst() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1537,7 +1548,7 @@ sub test_get_11_headercontinuation_unfold_sst()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_get_11_headercontinuation_unfold_sst() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1565,7 +1576,8 @@ sub test_get_11_headercontinuation_unfold_sss()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_get_11_headercontinuation_unfold_sss() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1573,7 +1585,7 @@ sub test_get_11_headercontinuation_unfold_sss()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_get_11_headercontinuation_unfold_sss() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1605,7 +1617,7 @@ sub test_get_11_duplicate_contentlength()
      $request .= "\r\n";
 
   my $me = (caller(0))[3];
-  if ($debug) { print_sane "test_get_11_duplicate_contentlength() starting\n"; }
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1613,7 +1625,7 @@ sub test_get_11_duplicate_contentlength()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_get_11_duplicate_contentlength() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1641,7 +1653,8 @@ sub test_options_11_star()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_options_11_star() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1649,7 +1662,7 @@ sub test_options_11_star()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_options_11_star() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1673,7 +1686,8 @@ sub test_options_11_knowngood()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_options_11_knowngood() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1681,7 +1695,7 @@ sub test_options_11_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_options_11_knowngood() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1706,7 +1720,8 @@ sub test_get_12_knowngood()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_get_12_knowngood() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1714,7 +1729,7 @@ sub test_get_12_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_get_12_knowngood() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1743,7 +1758,8 @@ sub test_doesnotexist_11_knowngood()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_doesnotexist_11_knowngood() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1751,7 +1767,7 @@ sub test_doesnotexist_11_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_doesnotexist_11_knowngood() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1780,7 +1796,8 @@ sub test_hairy_method_11_knowngood()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_hairy_method_11_knowngood() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1788,7 +1805,7 @@ sub test_hairy_method_11_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_hairy_method_11_knowngood() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1816,7 +1833,8 @@ sub test_get_20_knowngood()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_get_20_knowngood() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1824,7 +1842,7 @@ sub test_get_20_knowngood()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_get_20_knowngood() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
@@ -1853,7 +1871,8 @@ sub test_get_11_knowngood_percentzero()
      $request .= "Connection: close\r\n";
      $request .= "\r\n";
 
-  if ($debug) { print_sane "test_get_11_knowngood_percentzero() starting\n"; }
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "$me starting\n"; }
 
   my %signature ;
   my $sigref = \%signature ;
@@ -1861,7 +1880,7 @@ sub test_get_11_knowngood_percentzero()
   my @data = helper_talk($request, $sigref);
 
   if ($debug and @data) {
-    print_sane "test_get_11_knowngood_percentzero() returned data (if any):\n" ;
+    print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
