@@ -284,7 +284,7 @@ if ($overlaydir)
 
 classify_test('get_10_knowngood', 1);
 classify_test('get_11_knowngood', 1);
-classify_test('get_09_knowngood', 1);
+classify_test('get_09_knowngood', 2);
 classify_test('options_11_star', 1);
 classify_test('options_11_knowngood', 1);
 classify_test('get_12_knowngood', 1);
@@ -298,6 +298,7 @@ classify_test('get_11_headercontinuation_unfold_sss', 2);
 classify_test('get_20_knowngood', 1);
 classify_test('get_10_cronly', 1);
 classify_test('getlc_10_knowngood', 1);
+classify_test('get_11_duplicate_contentlength', 1);
 classify_test('hairy_method_11_knowngood', 2);
 classify_test('doesnotexist_11_knowngood', 1);
 classify_test('get_11_knowngood_percentzero', 1);
@@ -329,6 +330,7 @@ unless ($readsig)
   $tmpresult = &test_get_20_knowngood(); add_testresult('get_20_knowngood', $tmpresult);
   $tmpresult = &test_get_10_cronly(); add_testresult('get_10_cronly', $tmpresult);
   $tmpresult = &test_getlc_10_knowngood(); add_testresult('getlc_10_knowngood', $tmpresult);
+  $tmpresult = &test_get_11_duplicate_contentlength(); add_testresult('get_11_duplicate_contentlength', $tmpresult);
 
   $tmpresult = &test_hairy_method_11_knowngood(); add_testresult('hairy_method_11_knowngood', $tmpresult);
   $tmpresult = &test_doesnotexist_11_knowngood(); add_testresult('doesnotexist_11_knowngood', $tmpresult);
@@ -1572,6 +1574,46 @@ sub test_get_11_headercontinuation_unfold_sss()
 
   if ($debug and @data) {
     print_sane "test_get_11_headercontinuation_unfold_sss() returned data (if any):\n" ;
+    foreach (join '',@data) {
+      print_sane "$_\n";
+    }
+  }
+  my $sigref2 = classify_signature(@data);
+  %signature = ( %signature, %$sigref2 );
+  if (exists $signature{'does_keepalive'})
+  {
+    delete $signature{'does_keepalive'};
+    $signature{'http11_ignores_connection_close'} = 1 unless $signature{'forced_keepalive'};
+  }
+
+  # get test, ignore
+  if (exists $signature{'response_body'}) { delete $signature{'response_body'}; }
+
+  return $sigref;
+}
+
+sub test_get_11_duplicate_contentlength()
+{
+  # fun with Content-Length: 0, doubled
+
+  my $request  = "GET $path HTTP/1.1\r\n";
+     $request .= "Host: $host\r\n";
+     $request .= "User-Agent: $bland_useragent\r\n";
+     $request .= "Connection: close\r\n";
+     $request .= "Content-Length: 0\r\n";
+     $request .= "Content-length: 0\r\n";
+     $request .= "\r\n";
+
+  my $me = (caller(0))[3];
+  if ($debug) { print_sane "test_get_11_duplicate_contentlength() starting\n"; }
+
+  my %signature ;
+  my $sigref = \%signature ;
+
+  my @data = helper_talk($request, $sigref);
+
+  if ($debug and @data) {
+    print_sane "test_get_11_duplicate_contentlength() returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
