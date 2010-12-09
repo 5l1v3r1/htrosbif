@@ -22,6 +22,12 @@
    "get_10_nlonly" : {
       "identical_to" : "get_10_knowngood"
    },
+   "get_11_duplicate_contentlength" : {
+      "header_order" : "Server,Date,Connection",
+      "http_version" : "1.1",
+      "response_code" : "400",
+      "response_text" : "Bad Request"
+   },
    "get_11_headercontinuation" : {
       "identical_to" : "get_10_knowngood"
    },
@@ -44,10 +50,7 @@
       "identical_to" : "get_10_knowngood"
    },
    "get_11_knowngood_percentzero" : {
-      "header_order" : "Server,Date,Connection",
-      "http_version" : "1.1",
-      "response_code" : "400",
-      "response_text" : "Bad Request"
+      "identical_to" : "get_11_duplicate_contentlength"
    },
    "get_12_knowngood" : {
       "header_order" : "Server,Date,Connection",

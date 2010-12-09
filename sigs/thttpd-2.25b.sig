@@ -17,6 +17,9 @@
    "get_10_nlonly" : {
       "identical_to" : "get_10_knowngood"
    },
+   "get_11_duplicate_contentlength" : {
+      "identical_to" : "get_11_knowngood"
+   },
    "get_11_headercontinuation" : {
       "header_order" : "Server,Content-type,Date,Last-modified,Accept-ranges,Connection",
       "http_version" : "1.1",

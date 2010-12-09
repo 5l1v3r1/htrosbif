@@ -23,6 +23,9 @@
       "connection_closed" : 1,
       "does_keepalive" : 1
    },
+   "get_11_duplicate_contentlength" : {
+      "identical_to" : "get_11_headercontinuation"
+   },
    "get_11_headercontinuation" : {
       "header_order" : "Content-type,Content-length,Connection,Date,Server",
       "http_version" : "1.1",

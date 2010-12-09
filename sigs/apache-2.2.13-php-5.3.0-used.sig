@@ -18,6 +18,12 @@
    "get_10_nlonly" : {
       "identical_to" : "get_10_knowngood"
    },
+   "get_11_duplicate_contentlength" : {
+      "header_order" : "Date,Server,Connection,Content-type",
+      "http_version" : "1.1",
+      "response_code" : "413",
+      "response_text" : "Request Entity Too Large"
+   },
    "get_11_headercontinuation" : {
       "identical_to" : "get_10_knowngood"
    },
