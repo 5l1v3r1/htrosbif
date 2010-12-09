@@ -57,6 +57,7 @@
       "get_11_headercontinuation_kind" : "get_11_headercontinuation_kind_unfold_sss",
       "get_11_headercontinuation_kind_unfold_sst" : "get_11_headercontinuation_kind_unfold_sss",
       "get_11_headercontinuation_unfold_sst" : "get_11_headercontinuation_unfold_sss",
+      "get_11_duplicate_contentlength" : "get_11_knowngood",
       "get_10_knowngood" : "get_11_knowngood",
       "get_10_nlonly" : "get_11_knowngood"
    },
