@@ -465,6 +465,12 @@ if ($matchsigs)
             promote_test($cleaned->{$sigpart}->{'like'}, \%olfirstclass, \%olsecondclass); # promote referred test
             # merge and compare
             $sig2 = deref_sig ($cleaned->{$sigpart}->{'like'}, \%testresults);
+            # skip if non-existent
+            unless (keys %$sig2)
+            {
+              $overlaymaxes{$overlaytomatch} -= 100;
+              next;
+            }
             my $likehash = $cleaned->{$sigpart};
             my %sig3 = %$sig2 ;
             foreach my $key (keys %$likehash)
@@ -472,14 +478,22 @@ if ($matchsigs)
               next if ($key eq "like");
               $sig3{$key} = $likehash->{$key};
             }
-            print_sane ("$sigpart likeness: " . compare_sigs ($sig1, \%sig3) . "\n") if ($verbose && $debug) ;
+            print_sane ("$sigpart ") if ($verbose && $debug) ;
+            print_sane ("likeness: " . compare_sigs ($sig1, \%sig3) . "\n") if ($verbose && $debug) ;
             $overlayscores{$overlaytomatch} += compare_sigs ($sig1, \%sig3);
           }
           else
           {
             promote_test($cleaned->{$sigpart}, \%olfirstclass, \%olsecondclass); # promote referred test
             $sig2 = deref_sig ($cleaned->{$sigpart}, \%testresults);
-            print_sane ("$sigpart likeness: " . compare_sigs ($sig1, $sig2) . "\n") if ($verbose && $debug) ;
+            # skip if non-existent
+            unless (keys %$sig2)
+            {
+              $overlaymaxes{$overlaytomatch} -= 100;
+              next;
+            }
+            print_sane ("$sigpart ") if ($verbose && $debug) ;
+            print_sane ("likeness: " . compare_sigs ($sig1, $sig2) . "\n") if ($verbose && $debug) ;
             $overlayscores{$overlaytomatch} += compare_sigs ($sig1, $sig2);
           }
         }
@@ -783,6 +797,8 @@ sub add_testresult
   my $sigkeyname = $_[0];
   my $signature  = $_[1];
 
+  unless (keys %$signature) { return; }
+
   # compress identical results into one result + references
   # max one extra level of indirection, shouldn't slow anything down
 
@@ -963,10 +979,10 @@ sub compare_sigs
   my $perfectmatch = 100;
   my $score = 0;
 
-  print_sane ("sig1 dump: ") if ($debug and $debug >= 4);
-  debug_dump ($sig1) if ($debug and $debug >= 4);
-  print_sane ("sig2 dump: ") if ($debug and $debug >= 4);
-  debug_dump ($sig2) if ($debug and $debug >= 4);
+  print_sane ("sig1 dump: ") if ($count == 0 or ($debug and $debug >= 4));
+  debug_dump ($sig1) if ($count == 0 or ($debug and $debug >= 4));
+  print_sane ("sig2 dump: ") if ($count == 0 or ($debug and $debug >= 4));
+  debug_dump ($sig2) if ($count == 0 or ($debug and $debug >= 4));
 
   foreach my $key (uniq (keys %$sig1, keys %$sig2))
   {
@@ -1055,6 +1071,32 @@ sub compare_sigs
 
   print_sane "match_sigs: score = $score\n" if ($debug and $debug >= 2);
   return floor ($score * $perfectmatch / ($matchscore * $count));
+}
+
+## ECCM helpers
+################
+
+sub helper_eccm
+{
+  my $signature = $_[0];
+
+  print_sane ("helper_eccm signature dump: ") if ($debug and $debug >= 4);
+  debug_dump ($signature) if ($debug and $debug >= 4);
+
+  if (exists $signature->{'connection_closed'})
+  {
+    print_sane "Possible ECM detected, backing off\n" if ($verbose);
+    #sleep 20;
+    return;
+  }
+
+  if (exists $signature->{'connection_refused'})
+  {
+    print_sane "ECM detected, no result on this test, backing off\n" if ($verbose);
+    %$signature = ();
+    #sleep 40;
+    return;
+  }
 }
 
 ## THE ACTUAL TESTS
@@ -1211,13 +1253,7 @@ sub test_get_10_nlonly()
 
   my @data = helper_talk($request, $sigref);
 
-  if (exists $signature{'connection_closed'})
-  {
-    # this basic a request really ought to work, but
-    # I've seen fun threading bugs in unstable servers - so try again
-    delete $signature{'connection_closed'};
-    @data = helper_talk($request, $sigref);
-  }
+  helper_eccm($sigref);
 
   if (exists $signature{'connection_closed'})
   {
@@ -1260,13 +1296,7 @@ sub test_get_10_cronly()
 
   my @data = helper_talk($request, $sigref);
 
-  if (exists $signature{'connection_closed'})
-  {
-    # this basic a request really ought to work, but
-    # I've seen fun threading bugs in unstable servers - so try again
-    delete $signature{'connection_closed'};
-    @data = helper_talk($request, $sigref);
-  }
+  helper_eccm($sigref);
 
   if (exists $signature{'connection_closed'})
   {
@@ -1309,6 +1339,8 @@ sub test_getlc_10_knowngood()
 
   my @data = helper_talk($request, $sigref);
 
+  helper_eccm($sigref);
+
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
@@ -1347,6 +1379,8 @@ sub test_get_11_knowngood()
   my $sigref = \%signature ;
 
   my @data = helper_talk($request, $sigref);
+
+  helper_eccm($sigref);
 
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
@@ -1390,6 +1424,8 @@ sub test_get_11_headercontinuation_kind()
 
   my @data = helper_talk($request, $sigref);
 
+  helper_eccm($sigref);
+
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
@@ -1429,6 +1465,8 @@ sub test_get_11_headercontinuation_kind_unfold_sst()
 
   my @data = helper_talk($request, $sigref);
 
+  helper_eccm($sigref);
+
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
@@ -1467,6 +1505,8 @@ sub test_get_11_headercontinuation_kind_unfold_sss()
   my $sigref = \%signature ;
 
   my @data = helper_talk($request, $sigref);
+
+  helper_eccm($sigref);
 
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
@@ -1510,6 +1550,8 @@ sub test_get_11_headercontinuation()
 
   my @data = helper_talk($request, $sigref);
 
+  helper_eccm($sigref);
+
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
@@ -1547,6 +1589,8 @@ sub test_get_11_headercontinuation_unfold_sst()
 
   my @data = helper_talk($request, $sigref);
 
+  helper_eccm($sigref);
+
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
@@ -1583,6 +1627,8 @@ sub test_get_11_headercontinuation_unfold_sss()
   my $sigref = \%signature ;
 
   my @data = helper_talk($request, $sigref);
+
+  helper_eccm($sigref);
 
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
@@ -1624,6 +1670,8 @@ sub test_get_11_duplicate_contentlength()
 
   my @data = helper_talk($request, $sigref);
 
+  helper_eccm($sigref);
+
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
@@ -1661,6 +1709,8 @@ sub test_options_11_star()
 
   my @data = helper_talk($request, $sigref);
 
+  helper_eccm($sigref);
+
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
@@ -1693,6 +1743,8 @@ sub test_options_11_knowngood()
   my $sigref = \%signature ;
 
   my @data = helper_talk($request, $sigref);
+
+  helper_eccm($sigref);
 
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
@@ -1728,12 +1780,15 @@ sub test_get_12_knowngood()
 
   my @data = helper_talk($request, $sigref);
 
+  helper_eccm($sigref);
+
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
       print_sane "$_\n";
     }
   }
+
   my $sigref2 = classify_signature(@data);
   %signature = ( %signature, %$sigref2 );
   if (exists $signature{'does_keepalive'})
@@ -1765,6 +1820,8 @@ sub test_doesnotexist_11_knowngood()
   my $sigref = \%signature ;
 
   my @data = helper_talk($request, $sigref);
+
+  helper_eccm($sigref);
 
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
@@ -1804,6 +1861,8 @@ sub test_hairy_method_11_knowngood()
 
   my @data = helper_talk($request, $sigref);
 
+  helper_eccm($sigref);
+
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
     foreach (join '',@data) {
@@ -1840,6 +1899,8 @@ sub test_get_20_knowngood()
   my $sigref = \%signature ;
 
   my @data = helper_talk($request, $sigref);
+
+  helper_eccm($sigref);
 
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
@@ -1878,6 +1939,8 @@ sub test_get_11_knowngood_percentzero()
   my $sigref = \%signature ;
 
   my @data = helper_talk($request, $sigref);
+
+  helper_eccm($sigref);
 
   if ($debug and @data) {
     print_sane "$me returned data (if any):\n" ;
@@ -1922,7 +1985,7 @@ sub helper_talk
 
   unless ($sock)
   {
-    print_sane STDERR "Could not create socket: $!\n" if $verbose;
+    print STDERR "Could not create socket: $!\n" if $verbose;
     $sigref->{'connection_refused'} = 1;
     return @data;
   }
