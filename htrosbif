@@ -41,13 +41,13 @@ As a useful side effect, might detect reverse proxies, http load balancers, intr
 
 =head2 Signature matching (default mode)
 
-htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-m|--matchsigs <signature dir>] [-O|--overlays <overlay dir>] [-a|--allmatches] (<url> || [-r|--readsig <captured signature>])
+htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [--eccm] [-m|--matchsigs <signature dir>] [-O|--overlays <overlay dir>] [-a|--allmatches] (<url> || [-r|--readsig <captured signature>])
 
 By default prods <url> and lists top ten matches from ./sigs/*.sig
 
 =head2 Signature generation
 
-htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [-w|--writesig <signature file>] <url>
+htrosbif [-v|--verbose] [-d|--debug <num>] [--timeout <seconds>] [--eccm] [-w|--writesig <signature file>] <url>
 
 =head1 LIMITATIONS
 
@@ -96,6 +96,7 @@ my $result;
 my $readsig;
 my $writesig;
 my $allmatches;
+my $eccm;
 my $matchsigs = "sigs";
 my $overlaydir = "overlays";
 
@@ -131,6 +132,7 @@ $result = GetOptions (	'writesig|w=s' => \$writesig,
 			'verbose|v'    => \$verbose,
 			'version|V'    => \$version,
 			'timeout=i'    => \$resptimeout,
+			'eccm'         => \$eccm,
 			'debug|d=i'    => \$debug,
                       	'help|h|?'     => \$help);
 
@@ -1085,6 +1087,8 @@ sub compare_sigs
 sub helper_eccm
 {
   my $signature = $_[0];
+
+  return unless $eccm;
 
   print_sane ("helper_eccm signature dump: ") if ($debug and $debug >= 4);
   debug_dump ($signature) if ($debug and $debug >= 4);
