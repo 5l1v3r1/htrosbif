@@ -498,9 +498,9 @@ if ($matchsigs)
           }
         }
       }
-      if ($overlayscores{$overlaytomatch} >= ( $overlaymaxes{$overlaytomatch} * 0.90 ) )
+      if ($overlayscores{$overlaytomatch} >= ( $overlaymaxes{$overlaytomatch} * 0.79 ) )
       {
-        print_sane "Overlay match, phase 2, 90%: $overlaytomatch ($overlayscores{$overlaytomatch})\n" if $verbose;
+        print_sane "Overlay match, phase 2, 79%: $overlaytomatch ($overlayscores{$overlaytomatch}/$overlaymaxes{$overlaytomatch})\n" if $verbose;
       }
       else
       {
@@ -919,7 +919,7 @@ sub match_sigtree
   my $ol_addscore = $olinfo[0]; unless (defined $ol_addscore) { $ol_addscore = 0; }
   my $ol_addmax = $olinfo[1]; unless (defined $ol_addmax) { $ol_addmax = 0; }
   my $ol_prefix = $olinfo[2];
-  if (defined $ol_prefix) { $ol_prefix = $ol_prefix . ' => ' ; }
+  if (defined $ol_prefix) { $ol_prefix = $ol_prefix . "(" . floor(100*$ol_addscore/$ol_addmax) . "%) => " ; }
   else { $ol_prefix = ""; }
 
   foreach my $sigtomatch (keys %matchresults)
@@ -1092,7 +1092,7 @@ sub helper_eccm
   if (exists $signature->{'connection_closed'})
   {
     print_sane "Possible ECM detected, backing off\n" if ($verbose);
-    #sleep 20;
+    sleep 20;
     return;
   }
 
@@ -1100,7 +1100,7 @@ sub helper_eccm
   {
     print_sane "ECM detected, no result on this test, backing off\n" if ($verbose);
     %$signature = ();
-    #sleep 40;
+    sleep 40;
     return;
   }
 }
