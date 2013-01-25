@@ -7,3 +7,8 @@ Non-core modules:
  List::MoreUtils
  Test::Deep
 
+
+On Debian wheezy:
+
+    apt-get install libjson-xs-perl liblist-moreutils-perl libtest-deep-perl
+
